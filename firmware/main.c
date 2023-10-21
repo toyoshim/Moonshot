@@ -4,45 +4,31 @@
 
 #include "ch559.h"
 #include "hid.h"
-#include "led.h"
 #include "serial.h"
 
+#include "atari.h"
 #include "controller.h"
 #include "settings.h"
 
-#define VER "0.90"
+#define VER "0.95"
 
 static struct settings* settings = 0;
-static uint8_t button_masks[7] = {
-    0x20,  // Up
-    0x10,  // Down
-    0x08,  // Left
-    0x04,  // Right
-    0x02,  // B1
-    0x01,  // B2
-    0x00,  // COM
-};
 
 static void detected(void) {
   led_oneshot(L_PULSE_ONCE);
 }
 
 static uint8_t get_flags(void) {
-  return USE_HUB1;
+  return USE_HUB0 | USE_HUB1;
 }
 
 void main(void) {
   initialize();
 
-  for (uint8_t bit = 0; bit < 7; ++bit) {
-    pinMode(2, bit, INPUT_PULLUP);
-    digitalWrite(2, bit, LOW);
-  }
-
   settings_init();
   settings = settings_get();
 
-  delay(30);
+  atari_init();
 
   struct hid hid;
   hid.report = controller_update;
@@ -56,10 +42,6 @@ void main(void) {
     hid_poll();
     settings_poll();
     controller_poll();
-
-    uint8_t buttons = controller_data(1, 0, 0);
-    for (uint8_t bit = 0; bit < 7; ++bit) {
-      pinMode(2, bit, (buttons & button_masks[bit]) ? OUTPUT : INPUT_PULLUP);
-    }
+    atari_poll();
   }
 }
