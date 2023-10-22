@@ -1,7 +1,7 @@
 {
   "board": {
     "active_layer": 0,
-    "active_layer_preset": "All Layers",
+    "active_layer_preset": "Gerber",
     "auto_track_width": false,
     "hidden_netclasses": [],
     "hidden_nets": [],
@@ -40,6 +40,7 @@
       11,
       12,
       13,
+      14,
       15,
       16,
       17,
@@ -60,12 +61,10 @@
       33,
       34,
       35,
-      36,
-      39,
-      40
+      36
     ],
-    "visible_layers": "fffffff_ffffffff",
-    "zone_display_mode": 0
+    "visible_layers": "80010fc_ffffffff",
+    "zone_display_mode": 1
   },
   "meta": {
     "filename": "JoynerX.kicad_prl",

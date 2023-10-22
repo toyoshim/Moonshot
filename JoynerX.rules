@@ -11,7 +11,7 @@
     (via_costs 50)
     (plane_via_costs 5)
     (start_ripup_costs 100)
-    (start_pass_no 241)
+    (start_pass_no 1684)
     (layer_rule F.Cu
       (active on)
       (preferred_direction vertical)
@@ -71,11 +71,11 @@
   (class "kicad_default"
     "Net-(U1-VDD3.3)" "/JOY_U" "Net-(D1-K)" "/H1_D-" "/H1_D+" "/H2_D-" "/H2_D+" "/JOY_D"
     "/JOY_L" "/JOY_R" "/JOY_B1" /TXD "Net-(U1-P1_5)" "/JOY_B2" "/JOY_COM" "unconnected-(U1-P1_6-Pad1)"
-    "unconnected-(U1-P1_7-Pad2)" /BTN "unconnected-(U1-P3_0-Pad4)" "unconnected-(U1-RST-Pad3)" "unconnected-(U1-P4_5-Pad5)" "unconnected-(U1-P4_4-Pad6)" "unconnected-(U1-P3_1-Pad7)" "unconnected-(U1-P3_2-Pad8)"
-    "unconnected-(U1-P3_3-Pad9)" "unconnected-(U1-P3_4-Pad10)" "unconnected-(U1-P3_5-Pad11)" "unconnected-(U1-P3_6-Pad12)" "unconnected-(U1-P3_7-Pad13)" "unconnected-(U1-P4_3-Pad14)" "unconnected-(U1-P4_2-Pad15)" "unconnected-(U1-P4_7-Pad17)"
-    "unconnected-(U1-P4_1-Pad19)" "unconnected-(U1-P4_0-Pad20)" "unconnected-(U1-P2_7-Pad28)" "unconnected-(U1-P0_7-Pad33)" "unconnected-(U1-P0_6-Pad34)" "unconnected-(U1-P0_5-Pad35)" "unconnected-(U1-P0_4-Pad36)" "unconnected-(U1-P0_2-Pad38)"
-    "unconnected-(U1-P0_1-Pad39)" "unconnected-(U1-P0_0-Pad40)" "unconnected-(U1-P1_0-Pad43)" "unconnected-(U1-P1_1-Pad44)" "unconnected-(U1-P1_2-Pad45)" "unconnected-(U1-P1_3-Pad46)" "unconnected-(U1-P1_4-Pad47)" "unconnected-(J1-Shield-Pad5)"
-    "unconnected-(J2-Shield-Pad5)"
+    "unconnected-(U1-P1_7-Pad2)" /BTN "unconnected-(U1-P3_0-Pad4)" /B6 "unconnected-(U1-P4_5-Pad5)" "unconnected-(U1-P4_4-Pad6)" "unconnected-(U1-P3_1-Pad7)" "unconnected-(U1-P3_2-Pad8)"
+    "unconnected-(U1-P3_3-Pad9)" /B5 /B4 /B3 /OE "unconnected-(U1-P4_3-Pad14)" /START "unconnected-(U1-P4_7-Pad17)"
+    /SELECT /B2 "unconnected-(U1-P2_7-Pad28)" "unconnected-(U1-P0_7-Pad33)" "unconnected-(U1-P0_6-Pad34)" "unconnected-(U1-P0_5-Pad35)" "unconnected-(U1-P0_4-Pad36)" "unconnected-(U1-P0_2-Pad38)"
+    "unconnected-(U1-P0_1-Pad39)" "unconnected-(U1-P0_0-Pad40)" "unconnected-(U1-P1_0-Pad43)" "unconnected-(U1-P1_1-Pad44)" "unconnected-(U1-P1_2-Pad45)" "unconnected-(U1-P1_3-Pad46)" /B1 "unconnected-(J1-Shield-Pad5)"
+    "unconnected-(J2-Shield-Pad5)" /RIGHT /LEFT /DOWN "unconnected-(U2-Za-Pad4)" /UP "unconnected-(U1-P2_6-Pad27)" "unconnected-(U2-Zb-Pad7)"
     (clearance_class "kicad_default")
     (via_rule kicad_default)
     (rule
@@ -90,7 +90,7 @@
     (clearance_class Power)
     (via_rule Power)
     (rule
-      (width 750.0)
+      (width 250.0)
     )
     (circuit 
       (use_layer F.Cu B.Cu)
