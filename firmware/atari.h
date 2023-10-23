@@ -7,6 +7,10 @@
 
 #include <stdbool.h>
 
+#include "interrupt.h"
+
+extern void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0);
+
 void atari_init(void);
 void atari_poll(void);
 

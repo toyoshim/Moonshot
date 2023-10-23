@@ -30,16 +30,6 @@ enum adjust_index {
 };
 static uint16_t adjust[4] = {0x0000, 0x0000, 0x0400, 0x0400};
 
-// NORMAL
-//   ↓ Press TEST and SERVICE for 1sec
-// CONFIG (Click Test increase the setting ID)
-//   ↓ Click TEST
-// NORMAL
-enum state { S_NORMAL = 0, S_PRE_CONFIG, S_CONFIG, S_ADJUST };
-
-static uint8_t state = S_NORMAL;
-static uint8_t state_val = 0;
-
 static bool test_pressed(void) {
   return digitalRead(4, 7) == LOW;
 }
@@ -151,17 +141,6 @@ static void apply(void) {
   controller_reset();
 }
 
-static void rapid_sync(void) {
-  for (uint8_t i = 1; i < 8; ++i) {
-    settings.sequence[i].bit <<= 1;
-    if (0 == (settings.sequence[i].bit & settings.sequence[i].mask)) {
-      settings.sequence[i].bit = 1;
-    }
-    settings.sequence[i].on =
-        settings.sequence[i].pattern & settings.sequence[i].bit;
-  }
-}
-
 void settings_init(void) {
   pinMode(4, 6, INPUT_PULLUP);
   pinMode(4, 7, INPUT_PULLUP);
@@ -191,99 +170,6 @@ void settings_init(void) {
 
 void settings_poll(void) {
   led_poll();
-  if (timer3_tick_msec_between(poll_msec, poll_msec + 17)) {
-    return;
-  }
-  rapid_sync();
-  poll_msec = timer3_tick_msec();
-
-  // FIXME: Following code is for IONA-US and isn't modified for Moonshot.
-  switch (state) {
-    case S_NORMAL:
-      if (service_pressed() && test_pressed()) {
-        state_val++;
-        if (state_val >= 60) {
-          state = S_PRE_CONFIG;
-          led_mode(L_OFF);
-        }
-      } else {
-        state_val = 0;
-      }
-      break;
-    case S_PRE_CONFIG: {
-      if (service_pressed() && test_pressed()) {
-        state_val++;
-        if (state_val >= 180) {
-          state = S_ADJUST;
-          state_val = 0;
-          adjust[AI_X_MIN] = adjust[AI_Y_MIN] = 0xffff;
-          adjust[AI_X_MAX] = adjust[AI_Y_MAX] = 0x0000;
-          led_mode(L_BLINK);
-        }
-      } else {
-        state_val = 3;
-        state = S_CONFIG;
-      }
-    } break;
-    case S_CONFIG: {
-      bool service = state_val & 2;
-      bool test = state_val & 1;
-      bool cur_service = service_pressed();
-      bool cur_test = test_pressed();
-      if (!service && cur_service) {
-        state = S_NORMAL;
-        state_val = 0;
-        led_mode(led_current_mode);
-        store_opt();
-      } else if (!test && cur_test) {
-        current_setting++;
-        if (current_setting > 5) {
-          current_setting = 0;
-        }
-        apply();
-        led_oneshot(current_setting);
-      }
-      state_val = (cur_service ? 2 : 0) | (cur_test ? 1 : 0);
-    } break;
-    case S_ADJUST: {
-      uint8_t data = controller_data(0, 0, 0) & 0x03;
-      data |= controller_data(0, 1, 0);
-      state_val =
-          (state_val & 0xf0) | ((state_val << 1) & 0x0f) | (data ? 1 : 0);
-      // Take 4 corner positions on triggers.
-      if ((state_val & 0x0f) == 1) {
-        uint16_t x = controller_screen(0, 0);
-        if (x < adjust[AI_X_MIN]) {
-          adjust[AI_X_MIN] = x;
-        }
-        if (adjust[AI_X_MAX] < x) {
-          adjust[AI_X_MAX] = x;
-        }
-        uint16_t y = controller_screen(0, 1);
-        if (y < adjust[AI_Y_MIN]) {
-          adjust[AI_Y_MIN] = y;
-        }
-        if (adjust[AI_Y_MAX] < y) {
-          adjust[AI_Y_MAX] = y;
-        }
-        state_val += 0x10;
-        if (state_val >= 0x40) {
-          // Obtains base and scale.
-          state = S_NORMAL;
-          uint32_t scale;
-          scale = (uint32_t)640 << 16;
-          scale /= (adjust[AI_X_MAX] - adjust[AI_X_MIN]);
-          adjust[AI_X_SCALE] = scale;
-          scale = (uint32_t)960 << 16;
-          scale /= (adjust[AI_Y_MAX] - adjust[AI_Y_MIN]);
-          adjust[AI_Y_SCALE] = scale;
-          state_val = 0;
-          store_opt();
-          led_mode(led_current_mode);
-        }
-      }
-    } break;
-  }
 }
 
 struct settings* settings_get(void) {
@@ -291,17 +177,26 @@ struct settings* settings_get(void) {
 }
 
 bool settings_test_pressed(void) {
-  return (state == S_NORMAL) && test_pressed();
+  return test_pressed();
 }
 
 bool settings_service_pressed(void) {
-  return (state == S_NORMAL) && service_pressed();
+  return service_pressed();
 }
 
 void settings_led_mode(uint8_t mode) {
   led_current_mode = mode;
-  if (state == S_NORMAL) {
-    led_mode(led_current_mode);
+  led_mode(led_current_mode);
+}
+
+void settings_rapid_sync(void) {
+  for (uint8_t i = 1; i < 8; ++i) {
+    settings.sequence[i].bit <<= 1;
+    if (0 == (settings.sequence[i].bit & settings.sequence[i].mask)) {
+      settings.sequence[i].bit = 1;
+    }
+    settings.sequence[i].on =
+        settings.sequence[i].pattern & settings.sequence[i].bit;
   }
 }
 
