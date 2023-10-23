@@ -151,6 +151,17 @@ static void apply(void) {
   controller_reset();
 }
 
+static void rapid_sync(void) {
+  for (uint8_t i = 1; i < 8; ++i) {
+    settings.sequence[i].bit <<= 1;
+    if (0 == (settings.sequence[i].bit & settings.sequence[i].mask)) {
+      settings.sequence[i].bit = 1;
+    }
+    settings.sequence[i].on =
+        settings.sequence[i].pattern & settings.sequence[i].bit;
+  }
+}
+
 void settings_init(void) {
   pinMode(4, 6, INPUT_PULLUP);
   pinMode(4, 7, INPUT_PULLUP);
@@ -183,7 +194,10 @@ void settings_poll(void) {
   if (timer3_tick_msec_between(poll_msec, poll_msec + 17)) {
     return;
   }
+  rapid_sync();
   poll_msec = timer3_tick_msec();
+
+  // FIXME: Following code is for IONA-US and isn't modified for Moonshot.
   switch (state) {
     case S_NORMAL:
       if (service_pressed() && test_pressed()) {
@@ -288,17 +302,6 @@ void settings_led_mode(uint8_t mode) {
   led_current_mode = mode;
   if (state == S_NORMAL) {
     led_mode(led_current_mode);
-  }
-}
-
-void settings_rapid_sync(void) {
-  for (uint8_t i = 1; i < 8; ++i) {
-    settings.sequence[i].bit <<= 1;
-    if (0 == (settings.sequence[i].bit & settings.sequence[i].mask)) {
-      settings.sequence[i].bit = 1;
-    }
-    settings.sequence[i].on =
-        settings.sequence[i].pattern & settings.sequence[i].bit;
   }
 }
 

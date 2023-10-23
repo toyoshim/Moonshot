@@ -36,7 +36,7 @@ void main(void) {
   hid.get_flags = get_flags;
   hid_init(&hid);
 
-  Serial.printf("Joyner ver %s\n", VER);
+  Serial.printf("MP17-Moonshot ver %s\n", VER);
 
   for (;;) {
     hid_poll();

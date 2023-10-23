@@ -23,6 +23,9 @@ void atari_init(void) {
     pinMode(2, bit, OUTPUT);
     digitalWrite(2, bit, HIGH);
   }
+
+  // For proto.1
+  pinMode(2, 6, INPUT_PULLUP);
 }
 
 void atari_poll(void) {
