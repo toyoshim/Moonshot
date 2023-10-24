@@ -55,13 +55,13 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
       P2 = 0x20 | (out[n] >> 4);
       wait(count);
       P2_5 = 0;
-      wait(count);
+      wait(count << 1);
       P2_5 = 1;
 
       P2 = 0x30 | (out[n] & 0x0f);
       wait(count);
       P2_5 = 0;
-      wait(count);
+      wait(count << 1);
       P2_5 = 1;
     }
     wait(count);
@@ -108,11 +108,17 @@ void atari_poll(void) {
     uint8_t a1 = controller_analog(1) >> 8;
     uint8_t a2 = controller_analog(2) >> 8;
     uint8_t a3 = controller_analog(3) >> 8;
-    out[0] = (d0 << 6) | ((d1 & 0xf0) >> 2) | (d0 >> 6);
+    // A|A', B|B', C, D, E1, E2, START SELECT
+    out[0] = (d0 << 6) | ((d1 & 0x0c) << 4) | ((d1 & 0xf0) >> 2) | (d0 >> 6);
+    // Ch.0 high, Ch.1 high
     out[1] = (a0 & 0xf0) | ((a1 & 0xf0) >> 4);
+    // Ch.2 high, Ch.3 high
     out[2] = (a2 & 0xf0) | ((a3 & 0xf0) >> 4);
+    // Ch.0 low, Ch.1 low
     out[3] = (a0 << 4) | (a1 & 0x0f);
+    // Ch.2 low, Ch.3 low
     out[4] = (a2 << 4) | (a3 & 0x0f);
+    // A, B, A', B7, -, -, -, -
     out[5] = (d0 << 6) | ((d1 & 0x0c) << 2) | 0x0f;
   }
 
