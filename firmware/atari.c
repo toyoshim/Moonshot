@@ -96,6 +96,12 @@ void atari_poll(void) {
              ((buttons & 0x08) ? 0 : 0x04) | ((buttons & 0x04) ? 0 : 0x08) |
              ((buttons & 0x02) ? 0 : 0x10) | ((buttons & 0x01) ? 0 : 0x20);
     out[1] = ((buttons & 0x40) ? 0 : 0x08) | ((buttons & 0x80) ? 0 : 0x20);
+    if (buttons & 0x40) {
+      out[0] &= 0xfc;  // SELECT == U + D
+    }
+    if (buttons & 0x80) {
+      out[0] &= 0xf3;  // START == L + R
+    }
 
     buttons = controller_data(0, 1, 0);
     out[1] |= ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
