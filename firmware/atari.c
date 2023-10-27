@@ -42,7 +42,7 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
   // For proto.1
   if (!P2_6) {
     uint16_t count;
-    for (count = 0; count != 65535; ++count) {
+    for (count = 0; count != 256; ++count) {
       ++nop;
       if (P2_6) {
         break;
@@ -67,7 +67,9 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     wait(count);
     P2_4 = 0;
   }
-  settings_poll();
+
+  // Disable the GPIO interrupt once to permit timer interrupts, etc.
+  IE_GPIO = 0;
 }
 
 void atari_init(void) {
@@ -128,6 +130,10 @@ void atari_poll(void) {
     out[5] = (d0 << 6) | ((d1 & 0x0c) << 2) | 0x0f;
   }
 
+  if (mode == MODE_CYBER) {
+    // Enable again.
+    IE_GPIO = 1;
+  }
   if (timer3_tick_msec_between(frame_timer, frame_timer + 16)) {
     return;
   }
