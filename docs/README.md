@@ -50,12 +50,14 @@ LEDが消灯している事を確認してください。
 
 書き込みたいバージョンをメニューから選び`書き込み`ボタンを押すと、デバイス選択ダイアログが表示されます。
 デバイスが正しく認識されていれば`WinChipHead製の不明なデバイス`に準じた名前がリストされますので、その名前を選択した上で`接続`ボタンを押すことで、アップデートが開始します。
+アップデートの際、レイアウト設定もデフォルトに再設定されます。
 
 <script src="https://toyoshim.github.io/CH559Flasher.js/CH559Flasher.js"></script>
 <script>
 async function flash() {
   const firmwares = [
-    'firmwares/ms_v0_97.bin',  // Ver 0.97
+    'firmwares/ms_v0_97.bin',
+    'firmwares/ms_v0_98.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -66,6 +68,15 @@ async function flash() {
 
   const flasher = new CH559Flasher();
   await flasher.connect();
+
+  await flasher.eraseData();
+  const data_url = 'firmwares/data.bin';
+  const data_response = await fetch(data_url);
+  if (data_response.ok) {
+    const data_bin = data_response.arrayBuffer();
+    await flasher.writeDataInRange(0, data_bin);
+  }
+
   await flasher.erase();
   const url = firmwares[document.getElementById('version').selectedIndex];
   const response = await fetch(url);
@@ -81,7 +92,8 @@ async function flash() {
 </script>
 
 <select id="version">
-<option selected>Ver 0.97</option>
+<option>Ver 0.97</option>
+<option selected>Ver 0.98</option>
 </select>
 <button onclick="flash();">書き込み</button>
 

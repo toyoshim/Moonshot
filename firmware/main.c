@@ -10,7 +10,7 @@
 #include "controller.h"
 #include "settings.h"
 
-#define VER "0.97"
+#define VER "0.98"
 
 static struct settings* settings = 0;
 
