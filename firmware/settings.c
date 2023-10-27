@@ -172,6 +172,10 @@ void settings_poll(void) {
   led_poll();
 }
 
+void settings_select(uint8_t id) {
+  current_setting = id;
+}
+
 struct settings* settings_get(void) {
   return &settings;
 }

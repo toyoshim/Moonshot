@@ -57,6 +57,7 @@ struct settings {
 
 void settings_init(void);
 void settings_poll(void);
+void settings_select(uint8_t id);
 struct settings* settings_get(void);
 bool settings_test_pressed(void);
 bool settings_service_pressed(void);

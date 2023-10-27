@@ -143,10 +143,12 @@ void atari_poll(void) {
     }
     switch (mode) {
       case MODE_NORMAL:
+        settings_select(0);
         settings_led_mode(L_ON);
         gpio_enable_interrupt(0, true);
         break;
       case MODE_CYBER:
+        settings_select(1);
         settings_led_mode(L_BLINK);
         // For proto.1
         P2 = 0xff;
