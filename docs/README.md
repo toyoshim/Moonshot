@@ -74,8 +74,10 @@ async function flash() {
   const data_url = 'firmwares/data.bin';
   const data_response = await fetch(data_url);
   if (data_response.ok) {
-    const data_bin = data_response.arrayBuffer();
-    await flasher.writeDataInRange(0, data_bin);
+    const data_bin = await data_response.arrayBuffer();
+    for (let i = 0; i < 1024; i += 32) {
+      await flasher.writeDataInRange(i, data_bin.slice(i, i + 32));
+    }
   }
 
   await flasher.erase();
