@@ -3,8 +3,9 @@ CFLAGS = -V -mmcs51 --model-large --xram-size 0x1800 --xram-loc 0x0000 \
 CC     = sdcc
 TARGET = moonshot
 OBJS  = main.rel atari.rel controller.rel settings.rel ch559.rel gpio.rel \
-  hid.rel hid_dualshock3.rel hid_guncon3.rel hid_keyboard.rel hid_switch.rel \
-	hid_xbox.rel led.rel serial.rel timer3.rel uart1.rel usb_host.rel
+  hid.rel hid_dualshock3.rel hid_guncon3.rel hid_keyboard.rel hid_mouse.rel \
+	hid_switch.rel hid_xbox.rel led.rel serial.rel timer3.rel uart1.rel \
+	usb_host.rel
 
 .PHONY: all clean program run clean build prod
 

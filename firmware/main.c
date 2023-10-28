@@ -43,5 +43,29 @@ void main(void) {
     settings_poll();
     controller_poll();
     atari_poll();
+
+#ifdef _DBG
+    {
+      static bool init = false;
+      if (!init) {
+        Serial.printf(
+            "Ts T1 T2 T3 -- -- -- -- St Sv Up Dw Lf Rt B1 B2 B3 B4 B5 B6 B7 "
+            "B8 B9 B10 A0  A1  A2  A3  A4  A5");
+        Serial.printf("\n");
+        init = true;
+      }
+      for (uint8_t i = 0; i < 3; ++i) {
+        uint8_t v = (i == 0) ? controller_head() : controller_data(0, i - 1, 0);
+        for (uint8_t b = 0x80; b != 0; b >>= 1) {
+          Serial.printf("%d  ", (v & b) ? 1 : 0);
+        }
+      }
+      for (uint8_t i = 0; i < 6; ++i) {
+        uint16_t v = controller_analog(i);
+        Serial.printf("%x%x,", (v >> 8) & 0xff, v & 0xff);
+      }
+      Serial.printf("\r");
+    }
+#endif
   }
 }
