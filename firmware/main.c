@@ -10,7 +10,9 @@
 #include "controller.h"
 #include "settings.h"
 
-#define VER "0.98"
+// #define _DBG
+
+#define VER "0.99"
 
 static struct settings* settings = 0;
 

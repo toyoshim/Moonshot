@@ -21,7 +21,7 @@ config:
 	ch559flasher -g 46
 
 data:
-	ch559flasher -W data.bin
+	ch559flasher -W ../docs/firmwares/data.bin
 
 clean:
 	rm -rf build $(TARGET).bin

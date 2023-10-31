@@ -5,7 +5,7 @@
     "auto_track_width": false,
     "hidden_netclasses": [],
     "hidden_nets": [],
-    "high_contrast_mode": 0,
+    "high_contrast_mode": 1,
     "net_color_mode": 1,
     "opacity": {
       "images": 0.6,
@@ -67,7 +67,7 @@
     "zone_display_mode": 1
   },
   "meta": {
-    "filename": "JoynerX.kicad_prl",
+    "filename": "Moonshot.kicad_prl",
     "version": 3
   },
   "project": {

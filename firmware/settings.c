@@ -174,6 +174,7 @@ void settings_poll(void) {
 
 void settings_select(uint8_t id) {
   current_setting = id;
+  apply();
 }
 
 struct settings* settings_get(void) {
