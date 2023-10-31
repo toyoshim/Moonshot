@@ -6,6 +6,7 @@ permalink: /
 # できること
 - 左側のUSBポートに刺したゲームコントローラをJOY STICK端子に変換する
   + 標準的な2ボタンと上下・左右同時押しを利用したSTART/SELECTボタンに対応
+  + 製品候補版以降はCPSF準拠で6ボタンに対応
   + 基板上のボタンでモードを切り替え、サイバースティックのアナログモードに対応
   + 公式にサポートするゲームコントローラは[こちら](https://toyoshim.github.io/iona-us/firmware)を参照、実際はほとんどのコントローラが動作するはず
   + 動かないコントローラについてはご相談ください
@@ -41,6 +42,8 @@ Windowsに限ってドライバが必要となります。Windows 10以降では
 自動ではインストールされないので、手動で`ユニバーサル シリアル バス デバイス`から`WinUsb デバイス`を選択してインストールする必要があります。
 詳細は[Microsoft公式情報](https://learn.microsoft.com/ja-jp/windows-hardware/drivers/usbcon/winusb-installation#installing-winusb-by-specifying-the-system-provided-device-class)をご参照ください。
 参考動画も[こちら](https://www.youtube.com/watch?v=5yzpc2vI_94)にあります。
+USBホストとの相性問題があるようで、ドライバがうまくスタートできない事があります。
+使用しているチップの仕様なので根本的な修正ができないのですが、リトライする、他のUSBポートを試してみる、USBハブ越しに接続する、などが有効なようです。Windows以外のOSでは相性問題は発生しません。
 
 ## アップデート
 ここから先はChromiumベースのブラウザが必要です。
@@ -59,6 +62,8 @@ async function flash() {
   const firmwares = [
     'firmwares/ms_v0_97.bin',
     'firmwares/ms_v0_98.bin',
+    'firmwares/ms_v0_99.bin',
+    'firmwares/ms2_v0_99.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -95,8 +100,10 @@ async function flash() {
 </script>
 
 <select id="version">
-<option>Ver 0.97</option>
-<option selected>Ver 0.98</option>
+<option>プロトタイプ用 Ver 0.97</option>
+<option>プロトタイプ用 Ver 0.98</option>
+<option selected>プロトタイプ用 Ver 0.99</option>
+<option>製品候補用 Ver 0.99</option>
 </select>
 <button onclick="flash();">書き込み</button>
 
