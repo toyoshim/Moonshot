@@ -66,6 +66,9 @@ static void wait(uint16_t count) {
 }
 
 void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
+  // Disable the GPIO interrupt once to permit timer interrupts, etc.
+  IE_GPIO = 0;
+
 #ifdef PROTO1
   if (!P2_6) {
     uint16_t count;
@@ -74,6 +77,12 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
       if (P2_6) {
         break;
       }
+    }
+    if (count == 256) {
+      return;
+    }
+    if (count < 7) {
+      count = 7;
     }
     for (uint8_t n = 0; n < 5; ++n) {
       wait(count);
@@ -103,6 +112,12 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
         break;
       }
     }
+    if (count == 256) {
+      return;
+    }
+    if (count < 7) {
+      count = 7;
+    }
     for (uint8_t n = 0; n < 5; ++n) {
       wait(count);
     }
@@ -127,9 +142,6 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     P3_4 = 0;
   }
 #endif
-
-  // Disable the GPIO interrupt once to permit timer interrupts, etc.
-  IE_GPIO = 0;
 }
 
 void atari_init(void) {

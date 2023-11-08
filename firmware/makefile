@@ -7,7 +7,7 @@ OBJS  = main.rel atari.rel controller.rel settings.rel ch559.rel gpio.rel \
 	hid_switch.rel hid_xbox.rel led.rel serial.rel timer3.rel uart1.rel \
 	usb_host.rel
 
-.PHONY: all clean program run clean build prod
+.PHONY: all program run config data prod config build prod
 
 all: build $(TARGET).bin
 
@@ -22,6 +22,9 @@ config:
 
 data:
 	ch559flasher -W ../docs/firmwares/data.bin
+
+prod:
+	ch559flasher -g 46 -w ../docs/firmwares/ms2_v0_99.bin -W ../docs/firmwares/data.bin -b
 
 clean:
 	rm -rf build $(TARGET).bin
