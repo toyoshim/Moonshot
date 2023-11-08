@@ -56,6 +56,8 @@ LEDが消灯している事を確認してください。
 デバイスが正しく認識されていれば`WinChipHead製の不明なデバイス`に準じた名前がリストされますので、その名前を選択した上で`接続`ボタンを押すことで、アップデートが開始します。
 アップデートの際、レイアウト設定もデフォルトに再設定されます。
 
+チップが一枚だけ載った初期の物がプロトタイプ、チップが3枚載り裏にMoonshotと記載されているのが製品候補です。
+
 <script src="https://toyoshim.github.io/CH559Flasher.js/CH559Flasher.js"></script>
 <script>
 async function flash() {
