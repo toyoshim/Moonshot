@@ -66,9 +66,6 @@ static void wait(uint16_t count) {
 }
 
 void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
-  // Disable the GPIO interrupt once to permit timer interrupts, etc.
-  IE_GPIO = 0;
-
 #ifdef PROTO1
   if (!P2_6) {
     uint16_t count;
@@ -79,6 +76,8 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
       }
     }
     if (count == 256) {
+      // Disable the GPIO interrupt once to permit timer interrupts, etc.
+      IE_GPIO = 0;
       return;
     }
     if (count < 7) {
@@ -113,6 +112,8 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
       }
     }
     if (count == 256) {
+      // Disable the GPIO interrupt once to permit timer interrupts, etc.
+      IE_GPIO = 0;
       return;
     }
     if (count < 7) {
