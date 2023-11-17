@@ -275,8 +275,8 @@ void atari_poll(void) {
     // A, B, A', B7, -, -, -, -
     out[5] = (d0 << 6) | ((d1 & 0x0c) << 2) | 0x0f;
     // Serial.printf("%x %x %x %x %x%x\n", a0, a1, a2, a3, d0, d1);
-#ifndef PROTO1
   } else if (mode == MODE_MD) {
+    // PROTO1 doesn't enter this code path.
     // P2_0: D  D
     // P2_1: U  U
     // P2_2: L  0
@@ -304,7 +304,6 @@ void atari_poll(void) {
     P2 = out[0];
     P3 = out[1];
     P4_OUT = out[1];
-#endif
   }
 
   if (mode != MODE_NORMAL) {
@@ -333,30 +332,20 @@ void atari_poll(void) {
       case MODE_CYBER:
         settings_select(1);
         settings_led_mode(L_BLINK);
-#ifdef PROTO1
-        P2 = 0xff;
-        P2_4 = 0;  // L/H
-        P2_5 = 1;  // ACK
-        gpio_enable_interrupt(bIE_RXD1_LO, true);
-#else
-        P2 = 0xff;
-        P3 = 0xff;
-        P4_OUT = 0xfb;  // /OE
-        P2_5 = 0;       // L/H for Low
-        P3_4 = 0;       // L/H for High
-        P2_4 = 1;       // ACK for Low
-        P3_5 = 1;       // ACK for High
+        SET_LOW_CYCLE_SIGNALS(0x0f);
+        RESET_READY();
+#ifndef PROTO1
+        P2 = 0xdf;
         gpio_enable_interrupt(bIE_P1_4_LO, true);
 #endif
         break;
-#ifndef PROTO1
       case MODE_MD:
+        // PROTO1 doesn't enter this code path.
         settings_select(0);
         settings_led_mode(L_BLINK_TWICE);
         gpio_enable_interrupt(bIE_IO_EDGE | bIE_P5_7_HI, true);
         frame_timer = 0;
         break;
-#endif
     }
   }
   button_pressed = current_button_pressed;
