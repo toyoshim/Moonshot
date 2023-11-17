@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "chlib/src/io.h"
+#include "chlib/src/timer3.h"
 #include "gpio.h"
 #include "io.h"
 #include "led.h"
@@ -22,13 +24,18 @@
 enum {
   MODE_NORMAL = 0,  // Normal 2 buttons, or Capcom 6 buttons mode
   MODE_CYBER = 1,   // Cyber Stick mode
+#ifdef PROTO1
   MODE_LAST = MODE_CYBER,
+#else
+  MODE_MD = 2,  // Mega Drive 6B
+  MODE_LAST = MODE_MD,
+#endif
 };
 
 static volatile uint8_t out[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 static uint16_t frame_timer = 0;
 static bool button_pressed = false;
-static uint8_t mode = MODE_NORMAL;
+static volatile uint8_t mode = MODE_NORMAL;
 static volatile uint8_t nop = 0;
 
 #ifndef PROTO1
@@ -103,6 +110,36 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     P2_4 = 0;
   }
 #else
+  if (mode == MODE_MD) {
+    if ((frame_timer == 0) ||
+        !timer3_tick_raw_between(frame_timer, frame_timer + 32)) {
+      frame_timer = timer3_tick_raw();
+      return;
+    }
+    IE_GPIO = 0;
+    // Triggered twice in 1.1msec. Handle the exception cycle for 6B support.
+    // Next low cycle will mask the lower half byte.
+    P2 = out[0] & 0xf0;
+    for (; P1_4;)
+      led_poll();
+    // Now, SEL is low, and can prepare for the next high cycle.
+    P3 = out[2];
+    P4_OUT = out[2];
+    for (; !P1_4;)
+      led_poll();
+    frame_timer = timer3_tick_raw();
+    // Now, SEL is high, and can prepare for the next special low cycle.
+    P2 = out[0] | 0xf0;
+    for (; P1_4;)
+      led_poll();
+    // Now, SEL is low, and can prepare for the next normal high cycle.
+    P3 = out[1];
+    P4_OUT = out[1];
+    frame_timer = 0;
+    IE_GPIO = 1;
+    return;
+  }
+  // MODE_CYBER
   if (!P1_4) {
     uint16_t count;
     for (count = 0; count != 256; ++count) {
@@ -256,9 +293,39 @@ void atari_poll(void) {
     // A, B, A', B7, -, -, -, -
     out[5] = (d0 << 6) | ((d1 & 0x0c) << 2) | 0x0f;
     // Serial.printf("%x %x %x %x %x%x\n", a0, a1, a2, a3, d0, d1);
+#ifndef PROTO1
+  } else if (mode == MODE_MD) {
+    // P2_0: D  D
+    // P2_1: U  U
+    // P2_2: L  0
+    // P2_3: R  0
+    // P2_4: B2 Start
+    // P2_5: B1 B1
+    // P3_4: B1 B2     1
+    // P3_5: B2 B3     1
+    // P3_6: R  R      Select
+    // P3_7: U  U      B6
+    // P4_0: L  L      B4
+    // P4_1: D  D      B5
+    uint8_t buttons = controller_data(0, 0, 0);
+    out[0] = ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
+             ((buttons & 0x80) ? 0 : 0x10) | ((buttons & 0x02) ? 0 : 0x20);
+    uint8_t out1 =
+        ((buttons & 0x08) ? 0 : 0x01) | ((buttons & 0x10) ? 0 : 0x02) |
+        ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x04) ? 0 : 0x40) |
+        ((buttons & 0x20) ? 0 : 0x80);
+    uint8_t out2 = ((buttons & 0x40) ? 0 : 0x40) | 0x30;
+    buttons = controller_data(0, 1, 0);
+    out[1] = out1 | ((buttons & 0x80) ? 0 : 0x20);
+    out[2] = out2 | ((buttons & 0x40) ? 0 : 0x01) |
+             ((buttons & 0x20) ? 0 : 0x02) | ((buttons & 0x10) ? 0 : 0x80);
+    P2 = out[0];
+    P3 = out[1];
+    P4_OUT = out[1];
+#endif
   }
 
-  if (mode == MODE_CYBER) {
+  if (mode != MODE_NORMAL) {
     // Enable again.
     IE_GPIO = 1;
   }
@@ -300,6 +367,14 @@ void atari_poll(void) {
         gpio_enable_interrupt(bIE_P1_4_LO, true);
 #endif
         break;
+#ifndef PROTO1
+      case MODE_MD:
+        settings_select(0);
+        settings_led_mode(L_BLINK_TWICE);
+        gpio_enable_interrupt(bIE_IO_EDGE | bIE_P5_7_HI, true);
+        frame_timer = 0;
+        break;
+#endif
     }
   }
   button_pressed = current_button_pressed;

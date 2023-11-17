@@ -29,6 +29,8 @@ void main(void) {
 
   settings_init();
   settings = settings_get();
+  settings_select(0);
+  settings_led_mode(L_ON);
 
   atari_init();
 
