@@ -12,7 +12,7 @@
 
 void controller_reset(void);
 void controller_update(const uint8_t hub,
-                       const struct hub_info* info,
+                       const struct hid_info* info,
                        const uint8_t* data,
                        uint16_t size);
 void controller_poll(void);

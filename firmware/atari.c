@@ -24,10 +24,10 @@
 enum {
   MODE_NORMAL = 0,  // Normal 2 buttons, or Capcom 6 buttons mode
   MODE_CYBER = 1,   // Cyber Stick mode
+  MODE_MD = 2,      // Mega Drive 6B
 #ifdef PROTO1
   MODE_LAST = MODE_CYBER,
 #else
-  MODE_MD = 2,  // Mega Drive 6B
   MODE_LAST = MODE_MD,
 #endif
 };
@@ -49,6 +49,8 @@ static volatile uint8_t nop = 0;
 
 #else
 
+#define GPIO_COM P1_4
+
 #define SET_LOW_CYCLE_SIGNALS(v)      \
   {                                   \
     uint8_t adjusted_value = swap[v]; \
@@ -63,8 +65,6 @@ static volatile uint8_t nop = 0;
   }
 #define SET_READY() P3_5 = 0
 #define RESET_READY() P3_5 = 1
-
-#define GPIO_COM P1_4
 
 static uint8_t swap[16] = {
     0x00,  // xxxx0000 => 00xxxx00
@@ -98,6 +98,10 @@ static void wait(uint16_t count) {
 void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
   if (mode == MODE_MD) {
     // PROTO1 doesn't enter this code path.
+    if (!GPIO_COM) {
+      // Do nothing for noise.
+      return;
+    }
     if ((frame_timer == 0) ||
         !timer3_tick_raw_between(frame_timer, frame_timer + 32)) {
       frame_timer = timer3_tick_raw();
@@ -105,23 +109,29 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     }
     IE_GPIO = 0;
     // Triggered twice in 1.1msec. Handle the exception cycle for 6B support.
-    // Next low cycle will mask the lower half byte.
-    P2 = out[0] & 0xf0;
-    while (P1_4)
+    // Next low cycle will mask the lower 2-bits.
+    P2 = (out[0] & 0xf0) | 0x0c;
+    while (GPIO_COM) {
       led_poll();
+    }
     // Now, SEL is low, and can prepare for the next high cycle.
     P3 = out[2];
     P4_OUT = out[2];
-    while (!P1_4)
+    while (!GPIO_COM) {
       led_poll();
-    frame_timer = timer3_tick_raw();
+    }
     // Now, SEL is high, and can prepare for the next special low cycle.
-    P2 = out[0] | 0xf0;
-    while (P1_4)
+    P2 = out[0] | 0x0f;
+    while (GPIO_COM) {
       led_poll();
+    }
     // Now, SEL is low, and can prepare for the next normal high cycle.
     P3 = out[1];
     P4_OUT = out[1];
+    while (!GPIO_COM) {
+      led_poll();
+    }
+    P2 = out[0];
     frame_timer = 0;
     IE_GPIO = 1;
     return;
@@ -334,7 +344,9 @@ void atari_poll(void) {
         settings_led_mode(L_BLINK);
         SET_LOW_CYCLE_SIGNALS(0x0f);
         RESET_READY();
-#ifndef PROTO1
+#ifdef PROTO1
+        gpio_enable_interrupt(bIE_RXD1_LO, true);
+#else
         P2 = 0xdf;
         gpio_enable_interrupt(bIE_P1_4_LO, true);
 #endif

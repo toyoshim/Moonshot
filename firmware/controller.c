@@ -40,7 +40,7 @@ static bool button_check(uint16_t index, const uint8_t* data) {
   return data[byte] & (1 << bit);
 }
 
-uint16_t analog_check(const struct hub_info* info,
+uint16_t analog_check(const struct hid_info* info,
                       const uint8_t* data,
                       uint8_t index) {
   if (info->axis[index] == 0xffff) {
@@ -166,7 +166,7 @@ void controller_reset(void) {
 }
 
 void controller_update(const uint8_t hub_index,
-                       const struct hub_info* info,
+                       const struct hid_info* info,
                        const uint8_t* data,
                        uint16_t size) {
 #ifdef _DBG_HUB1_ONLY
@@ -194,10 +194,17 @@ void controller_update(const uint8_t hub_index,
   }
   Serial.println("");
 #endif  // _DBG_HID_REPORT_DUMP
+  if (info->report_id) {
+    if (info->report_id != data[0]) {
+      return;
+    }
+    data++;
+    size--;
+  }
 #ifdef _DBG_HID_DECODE_DUMP
   for (uint8_t i = 0; i < 6; ++i) {
     uint16_t value = analog_check(info, data, i);
-    Serial.printf("analog %d: %x%x\n", i, value >> 8, value & 0xff);
+    Serial.printf("analog %d: %x%x; ", i, value >> 8, value & 0xff);
   }
   Serial.printf("digital: ");
   for (uint8_t i = 0; i < 13; ++i) {
@@ -219,13 +226,6 @@ void controller_update(const uint8_t hub_index,
     return;
   } else if (mode == MODE_MAHJONG) {
     mode = MODE_NORMAL;
-  }
-
-  if (info->report_id) {
-    if (info->report_id != data[0]) {
-      return;
-    }
-    data++;
   }
 
   struct settings* settings = settings_get();
