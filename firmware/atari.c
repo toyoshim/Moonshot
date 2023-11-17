@@ -38,7 +38,34 @@ static bool button_pressed = false;
 static volatile uint8_t mode = MODE_NORMAL;
 static volatile uint8_t nop = 0;
 
-#ifndef PROTO1
+#ifdef PROTO1
+
+#define GPIO_COM P2_6
+
+#define SET_LOW_CYCLE_SIGNALS(v) P2 = 0x20 | (v)
+#define SET_HIGH_CYCLE_SIGNALS(v) P2 = 0x30 | (v)
+#define SET_READY() P2_5 = 0
+#define RESET_READY() P2_5 = 1
+
+#else
+
+#define SET_LOW_CYCLE_SIGNALS(v)      \
+  {                                   \
+    uint8_t adjusted_value = swap[v]; \
+    P4_OUT = adjusted_value;          \
+    P3 = 0x20 | adjusted_value;       \
+  }
+#define SET_HIGH_CYCLE_SIGNALS(v)     \
+  {                                   \
+    uint8_t adjusted_value = swap[v]; \
+    P4_OUT = adjusted_value;          \
+    P3 = 0x30 | adjusted_value;       \
+  }
+#define SET_READY() P3_5 = 0
+#define RESET_READY() P3_5 = 1
+
+#define GPIO_COM P1_4
+
 static uint8_t swap[16] = {
     0x00,  // xxxx0000 => 00xxxx00
     0x80,  // xxxx0001 => 10xxxx00
@@ -62,55 +89,15 @@ static uint8_t swap[16] = {
 static void wait(uint16_t count) {
   for (uint16_t i = 0; i < count; ++i) {
     ++nop;
-#ifdef PROTO1
-    if (P2_6) {
-#else
-    if (P1_4) {
-#endif
+    if (GPIO_COM) {
       ++nop;
     }
   }
 }
 
 void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
-#ifdef PROTO1
-  if (!P2_6) {
-    uint16_t count;
-    for (count = 0; count != 256; ++count) {
-      ++nop;
-      if (P2_6) {
-        break;
-      }
-    }
-    if (count == 256) {
-      // Disable the GPIO interrupt once to permit timer interrupts, etc.
-      IE_GPIO = 0;
-      return;
-    }
-    if (count < 7) {
-      count = 7;
-    }
-    for (uint8_t n = 0; n < 5; ++n) {
-      wait(count);
-    }
-    for (uint8_t n = 0; n < 6; ++n) {
-      P2 = 0x20 | (out[n] >> 4);
-      wait(count);
-      P2_5 = 0;
-      wait(count << 1);
-      P2_5 = 1;
-
-      P2 = 0x30 | (out[n] & 0x0f);
-      wait(count);
-      P2_5 = 0;
-      wait(count << 1);
-      P2_5 = 1;
-    }
-    wait(count);
-    P2_4 = 0;
-  }
-#else
   if (mode == MODE_MD) {
+    // PROTO1 doesn't enter this code path.
     if ((frame_timer == 0) ||
         !timer3_tick_raw_between(frame_timer, frame_timer + 32)) {
       frame_timer = timer3_tick_raw();
@@ -120,17 +107,17 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     // Triggered twice in 1.1msec. Handle the exception cycle for 6B support.
     // Next low cycle will mask the lower half byte.
     P2 = out[0] & 0xf0;
-    for (; P1_4;)
+    while (P1_4)
       led_poll();
     // Now, SEL is low, and can prepare for the next high cycle.
     P3 = out[2];
     P4_OUT = out[2];
-    for (; !P1_4;)
+    while (!P1_4)
       led_poll();
     frame_timer = timer3_tick_raw();
     // Now, SEL is high, and can prepare for the next special low cycle.
     P2 = out[0] | 0xf0;
-    for (; P1_4;)
+    while (P1_4)
       led_poll();
     // Now, SEL is low, and can prepare for the next normal high cycle.
     P3 = out[1];
@@ -140,11 +127,11 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     return;
   }
   // MODE_CYBER
-  if (!P1_4) {
+  if (!GPIO_COM) {
     uint16_t count;
     for (count = 0; count != 256; ++count) {
       ++nop;
-      if (P1_4) {
+      if (GPIO_COM) {
         break;
       }
     }
@@ -160,26 +147,21 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
       wait(count);
     }
     for (uint8_t n = 0; n < 6; ++n) {
-      uint8_t v = swap[out[n] >> 4];
-      P4_OUT = v;
-      P3 = 0x20 | v;
+      SET_LOW_CYCLE_SIGNALS(out[n] >> 4);
       wait(count);
-      P3_5 = 0;
+      SET_READY();
       wait(count << 1);
-      P3_5 = 1;
+      RESET_READY();
 
-      v = swap[out[n] & 0x0f];
-      P4_OUT = v;
-      P3 = 0x30 | v;
+      SET_HIGH_CYCLE_SIGNALS(out[n] & 0x0f);
       wait(count);
-      P3_5 = 0;
+      SET_READY();
       wait(count << 1);
-      P3_5 = 1;
+      RESET_READY();
     }
     wait(count);
-    P3_4 = 0;
+    SET_LOW_CYCLE_SIGNALS(0x0f);
   }
-#endif
 }
 
 void atari_init(void) {
