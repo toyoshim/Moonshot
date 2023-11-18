@@ -8,6 +8,7 @@ permalink: /
   + 標準的な2ボタンと上下・左右同時押しを利用したSTART/SELECTボタンに対応
   + 製品候補版以降はCPSF準拠で6ボタンに対応
   + 基板上のボタンでモードを切り替え、サイバースティックのアナログモードに対応
+  + 基板上のボタンでモードを切り替え、チェルノブコンバーターを想定したメガドライブモードに対応
   + 公式にサポートするゲームコントローラは[こちら](https://toyoshim.github.io/iona-us/firmware)を参照、実際はほとんどのコントローラが動作するはず
   + 動かないコントローラについてはご相談ください
 
@@ -20,7 +21,8 @@ permalink: /
 # 動作モード
 基板上のボタンを押すことで切り替わり、LEDの状態でモードを区別できる
 - 点灯: 通常モード
-- 点滅: サイバースティックモード
+- 点滅1: サイバースティックモード
+- 点滅2: メガドライブモード
 
 # ボタンのレイアウト
 将来的には本体でもレイアウト変えられるようにしたいと思いつつ、現状は既存のIONA-US用の[設定](https://toyoshim.github.io/iona-us/setting)ページを流用できるようにしてあります。
@@ -66,8 +68,10 @@ async function flash() {
     'firmwares/ms_v0_98.bin',
     'firmwares/ms_v0_99.bin',
     'firmwares/ms_v0_99_1.bin',
+    'firmwares/ms_v0_99_2.bin',
     'firmwares/ms2_v0_99.bin',
     'firmwares/ms2_v0_99_1.bin',
+    'firmwares/ms2_v0_99_2.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -108,8 +112,10 @@ async function flash() {
 <option>プロトタイプ用 Ver 0.98</option>
 <option>プロトタイプ用 Ver 0.99</option>
 <option>プロトタイプ用 Ver 0.99.1</option>
+<option>プロトタイプ用 Ver 0.99.2</option>
 <option>製品候補用 Ver 0.99</option>
-<option selected>製品候補用 Ver 0.99.1</option>
+<option>製品候補用 Ver 0.99.1</option>
+<option selected>製品候補用 Ver 0.99.2</option>
 </select>
 <button onclick="flash();">書き込み</button>
 

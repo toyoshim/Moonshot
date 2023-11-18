@@ -97,6 +97,7 @@ static void wait(uint16_t count) {
 
 void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
   if (mode == MODE_MD) {
+#if 0
     // PROTO1 doesn't enter this code path.
     if (!GPIO_COM) {
       // Do nothing for noise.
@@ -134,6 +135,7 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     P2 = out[0];
     frame_timer = 0;
     IE_GPIO = 1;
+#endif
     return;
   }
   // MODE_CYBER
