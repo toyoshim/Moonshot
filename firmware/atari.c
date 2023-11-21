@@ -24,7 +24,7 @@
 enum {
   MODE_NORMAL = 0,  // Normal 2 buttons, or Capcom 6 buttons mode
   MODE_CYBER = 1,   // Cyber Stick mode
-  MODE_MD = 2,      // Mega Drive 6B
+  MODE_MD = 2,      // Mega Drive 3B / 6B
 #ifdef PROTO1
   MODE_LAST = MODE_CYBER,
 #else
@@ -32,11 +32,14 @@ enum {
 #endif
 };
 
+#define MD_STATE_TIMEOUT 32
+
 static volatile uint8_t out[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 static uint16_t frame_timer = 0;
 static bool button_pressed = false;
 static volatile uint8_t mode = MODE_NORMAL;
 static volatile uint8_t nop = 0;
+static volatile uint16_t phase_timeout = 0;
 
 #ifdef PROTO1
 
@@ -97,45 +100,60 @@ static void wait(uint16_t count) {
 
 void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
   if (mode == MODE_MD) {
-#if 0
-    // PROTO1 doesn't enter this code path.
-    if (!GPIO_COM) {
-      // Do nothing for noise.
+    if (!timer3_tick_raw_between(phase_timeout, phase_timeout + 16)) {
+      // The fist posedge after more than 1ms interval results in transsint to
+      // the initial state.
+      phase_timeout = timer3_tick_raw();
+      P2 = out[0];
+      P3 = out[1];
+      P4_OUT = out[1];
       return;
     }
-    if ((frame_timer == 0) ||
-        !timer3_tick_raw_between(frame_timer, frame_timer + 32)) {
-      frame_timer = timer3_tick_raw();
+    // This is the second posedge within a short interval. Let's prepare for the
+    // next special low cycle there 3:0 goes low.
+    P2 = out[0] & 0xf0;
+    // And wait until the select goes low.
+    uint16_t count;
+    for (count = 0; count != MD_STATE_TIMEOUT; ++count) {
+      ++nop;
+      if (!GPIO_COM) {
+        break;
+      }
+    }
+    if (count == MD_STATE_TIMEOUT) {
+      // Timeout meant the host doesn't know 6B protocol. Fallback to 3B mode.
+      P2 = out[0];
       return;
     }
-    IE_GPIO = 0;
-    // Triggered twice in 1.1msec. Handle the exception cycle for 6B support.
-    // Next low cycle will mask the lower 2-bits.
-    P2 = (out[0] & 0xf0) | 0x0c;
-    while (GPIO_COM) {
-      led_poll();
-    }
-    // Now, SEL is low, and can prepare for the next high cycle.
+    // Prepare for the next high cycle for X, Y, Z, and Mode.
     P3 = out[2];
     P4_OUT = out[2];
-    while (!GPIO_COM) {
-      led_poll();
+    // And wait until the select goes high.
+    for (count = 0; count != MD_STATE_TIMEOUT; ++count) {
+      ++nop;
+      if (GPIO_COM) {
+        break;
+      }
     }
-    // Now, SEL is high, and can prepare for the next special low cycle.
-    P2 = out[0] | 0x0f;
-    while (GPIO_COM) {
-      led_poll();
+    if (count == MD_STATE_TIMEOUT) {
+      // Timeout meant the host doesn't know 6B protocol. Fallback to 3B mode.
+      P3 = out[1];
+      P4_OUT = out[1];
+      return;
     }
-    // Now, SEL is low, and can prepare for the next normal high cycle.
+    // Prepare for the next low cycle, the final state.
+    P2 = out[0];
+    // And wait until the select goes low, but with timeout. CPMD.X doesn't
+    // initiate the last low cycle.
+    for (uint16_t count = 0; count != MD_STATE_TIMEOUT; ++count) {
+      ++nop;
+      if (!GPIO_COM) {
+        break;
+      }
+    }
+    // Reset for the initial idle state anyway.
     P3 = out[1];
     P4_OUT = out[1];
-    while (!GPIO_COM) {
-      led_poll();
-    }
-    P2 = out[0];
-    frame_timer = 0;
-    IE_GPIO = 1;
-#endif
     return;
   }
   // MODE_CYBER
@@ -358,7 +376,7 @@ void atari_poll(void) {
         settings_select(0);
         settings_led_mode(L_BLINK_TWICE);
         gpio_enable_interrupt(bIE_IO_EDGE | bIE_P5_7_HI, true);
-        frame_timer = 0;
+        phase_timeout = 0;
         break;
     }
   }
