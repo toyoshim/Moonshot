@@ -6,9 +6,10 @@ permalink: /
 # できること
 - 左側のUSBポートに刺したゲームコントローラをJOY STICK端子に変換する
   + 標準的な2ボタンと上下・左右同時押しを利用したSTART/SELECTボタンに対応
-  + 製品候補版以降はCPSF準拠で6ボタンに対応
+    * 製品候補版以降はCPSF準拠で6ボタンに対応
   + 基板上のボタンでモードを切り替え、サイバースティックのアナログモードに対応
   + 基板上のボタンでモードを切り替え、チェルノブコンバーターを想定したメガドライブモードに対応
+    * 製品候補版以降はX,Y,Z,Modeを追加した6ボタン仕様にも対応
   + 公式にサポートするゲームコントローラは[こちら](https://toyoshim.github.io/iona-us/firmware)を参照、実際はほとんどのコントローラが動作するはず
   + 動かないコントローラについてはご相談ください
 
@@ -72,6 +73,7 @@ async function flash() {
     'firmwares/ms2_v0_99.bin',
     'firmwares/ms2_v0_99_1.bin',
     'firmwares/ms2_v0_99_2.bin',
+    'firmwares/ms2_v0_99_3.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -115,7 +117,8 @@ async function flash() {
 <option>プロトタイプ用 Ver 0.99.2</option>
 <option>製品候補用 Ver 0.99</option>
 <option>製品候補用 Ver 0.99.1</option>
-<option selected>製品候補用 Ver 0.99.2</option>
+<option>製品候補用 Ver 0.99.2</option>
+<option selected>製品候補用 Ver 0.99.3</option>
 </select>
 <button onclick="flash();">書き込み</button>
 
