@@ -39,7 +39,6 @@ static uint16_t frame_timer = 0;
 static bool button_pressed = false;
 static volatile uint8_t mode = MODE_NORMAL;
 static volatile uint8_t nop = 0;
-static volatile uint16_t phase_timeout = 0;
 
 #ifdef PROTO1
 
@@ -98,60 +97,56 @@ static void wait(uint16_t count) {
   }
 }
 
+static bool wait_posedge(uint16_t timeout) {
+  uint16_t count;
+  for (count = 0; count != timeout; ++count) {
+    ++nop;
+    if (GPIO_COM) {
+      break;
+    }
+  }
+  return count != timeout;
+}
+
+static bool wait_negedge(uint16_t timeout) {
+  uint16_t count;
+  for (count = 0; count != timeout; ++count) {
+    ++nop;
+    if (!GPIO_COM) {
+      break;
+    }
+  }
+  return count != timeout;
+}
+
 void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
   if (mode == MODE_MD) {
-    if (!timer3_tick_raw_between(phase_timeout, phase_timeout + 16)) {
-      // The fist posedge after more than 1ms interval results in transsint to
-      // the initial state.
-      phase_timeout = timer3_tick_raw();
-      P2 = out[0];
-      P3 = out[1];
-      P4_OUT = out[1];
-      return;
+    // The fist posedge.
+    if (!wait_negedge(MD_STATE_TIMEOUT)) {
+      goto MD_TIMEOUT;
     }
-    // This is the second posedge within a short interval. Let's prepare for the
-    // next special low cycle there 3:0 goes low.
+    if (!wait_posedge(MD_STATE_TIMEOUT)) {
+      goto MD_TIMEOUT;
+    }
+    // The second posedge. Let's prepare for the next special low cycle there
+    // 3:0 goes low.
     P2 = out[0] & 0xf0;
-    // And wait until the select goes low.
-    uint16_t count;
-    for (count = 0; count != MD_STATE_TIMEOUT; ++count) {
-      ++nop;
-      if (!GPIO_COM) {
-        break;
-      }
-    }
-    if (count == MD_STATE_TIMEOUT) {
-      // Timeout meant the host doesn't know 6B protocol. Fallback to 3B mode.
-      P2 = out[0];
-      return;
+    if (!wait_negedge(MD_STATE_TIMEOUT)) {
+      goto MD_TIMEOUT;
     }
     // Prepare for the next high cycle for X, Y, Z, and Mode.
     P3 = out[2];
     P4_OUT = out[2];
-    // And wait until the select goes high.
-    for (count = 0; count != MD_STATE_TIMEOUT; ++count) {
-      ++nop;
-      if (GPIO_COM) {
-        break;
-      }
-    }
-    if (count == MD_STATE_TIMEOUT) {
-      // Timeout meant the host doesn't know 6B protocol. Fallback to 3B mode.
-      P3 = out[1];
-      P4_OUT = out[1];
-      return;
+    if (!wait_posedge(MD_STATE_TIMEOUT)) {
+      goto MD_TIMEOUT;
     }
     // Prepare for the next low cycle, the final state.
     P2 = out[0];
-    // And wait until the select goes low, but with timeout. CPMD.X doesn't
-    // initiate the last low cycle.
-    for (uint16_t count = 0; count != MD_STATE_TIMEOUT; ++count) {
-      ++nop;
-      if (!GPIO_COM) {
-        break;
-      }
-    }
+    wait_negedge(MD_STATE_TIMEOUT);
+
+  MD_TIMEOUT:
     // Reset for the initial idle state anyway.
+    P2 = out[0];
     P3 = out[1];
     P4_OUT = out[1];
     return;
@@ -313,24 +308,31 @@ void atari_poll(void) {
     // P2_3: R  0
     // P2_4: B2 Start
     // P2_5: B1 B1
-    // P3_4: B1 B2     1
-    // P3_5: B2 B3     1
+    // P3_4: B1 B2     B2
+    // P3_5: B2 B3     B3
     // P3_6: R  R      Select
     // P3_7: U  U      B6
     // P4_0: L  L      B4
     // P4_1: D  D      B5
     uint8_t buttons = controller_data(0, 0, 0);
+    // D | U | Start | B1
     out[0] = ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
              ((buttons & 0x80) ? 0 : 0x10) | ((buttons & 0x02) ? 0 : 0x20);
+    // L | D | B2 | R | U
     uint8_t out1 =
         ((buttons & 0x08) ? 0 : 0x01) | ((buttons & 0x10) ? 0 : 0x02) |
         ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x04) ? 0 : 0x40) |
         ((buttons & 0x20) ? 0 : 0x80);
-    uint8_t out2 = ((buttons & 0x40) ? 0 : 0x40) | 0x30;
+    // B2 | Select
+    uint8_t out2 =
+        ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x40) ? 0 : 0x40);
     buttons = controller_data(0, 1, 0);
+    // | B3
     out[1] = out1 | ((buttons & 0x80) ? 0 : 0x20);
-    out[2] = out2 | ((buttons & 0x40) ? 0 : 0x01) |
-             ((buttons & 0x20) ? 0 : 0x02) | ((buttons & 0x10) ? 0 : 0x80);
+    // | B3 | B4 | B5 | B6
+    out[2] = out2 | ((buttons & 0x80) ? 0 : 0x20) |
+             ((buttons & 0x40) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
+             ((buttons & 0x10) ? 0 : 0x80);
     P2 = out[0];
     P3 = out[1];
     P4_OUT = out[1];
@@ -376,7 +378,6 @@ void atari_poll(void) {
         settings_select(0);
         settings_led_mode(L_BLINK_TWICE);
         gpio_enable_interrupt(bIE_IO_EDGE | bIE_P5_7_HI, true);
-        phase_timeout = 0;
         break;
     }
   }
