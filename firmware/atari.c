@@ -32,13 +32,14 @@ enum {
 #endif
 };
 
-#define MD_STATE_TIMEOUT 32
+#define MD_STATE_TIMEOUT 256
+#define MD_STATE_SHORT_TIMEOUT 64
 
 static volatile uint8_t out[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 static uint16_t frame_timer = 0;
 static bool button_pressed = false;
 static volatile uint8_t mode = MODE_NORMAL;
-static volatile uint8_t nop = 0;
+static volatile uint8_t nop = 0;  // used to avoid compiler optimization
 
 #ifdef PROTO1
 
@@ -142,7 +143,7 @@ void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
     }
     // Prepare for the next low cycle, the final state.
     P2 = out[0];
-    wait_negedge(MD_STATE_TIMEOUT);
+    wait_negedge(MD_STATE_SHORT_TIMEOUT);
 
   MD_TIMEOUT:
     // Reset for the initial idle state anyway.

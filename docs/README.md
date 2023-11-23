@@ -75,6 +75,7 @@ async function flash() {
     'firmwares/ms2_v0_99_2.bin',
     'firmwares/ms2_v0_99_3.bin',
     'firmwares/ms2_v0_99_4.bin',
+    'firmwares/ms2_v0_99_5.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -120,7 +121,8 @@ async function flash() {
 <option>製品候補用 Ver 0.99.1</option>
 <option>製品候補用 Ver 0.99.2</option>
 <option>製品候補用 Ver 0.99.3</option>
-<option selected>製品候補用 Ver 0.99.4</option>
+<option>製品候補用 Ver 0.99.4</option>
+<option selected>製品候補用 Ver 0.99.5</option>
 </select>
 <button onclick="flash();">書き込み</button>
 

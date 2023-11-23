@@ -12,7 +12,7 @@
 
 // #define _DBG
 
-#define VER "0.99.4"
+#define VER "0.99.5"
 
 static struct settings* settings = 0;
 
