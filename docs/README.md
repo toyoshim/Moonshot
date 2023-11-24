@@ -67,16 +67,8 @@ async function flash() {
   const firmwares = [
     'firmwares/ms_v0_97.bin',
     'firmwares/ms_v0_98.bin',
-    'firmwares/ms_v0_99.bin',
-    'firmwares/ms_v0_99_1.bin',
     'firmwares/ms_v0_99_2.bin',
-    'firmwares/ms2_v0_99.bin',
-    'firmwares/ms2_v0_99_1.bin',
-    'firmwares/ms2_v0_99_2.bin',
-    'firmwares/ms2_v0_99_3.bin',
-    'firmwares/ms2_v0_99_4.bin',
-    'firmwares/ms2_v0_99_5.bin',
-    'firmwares/ms2_v0_99_6.bin',
+    'firmwares/ms2_v0_99_7.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -115,16 +107,8 @@ async function flash() {
 <select id="version">
 <option>プロトタイプ用 Ver 0.97</option>
 <option>プロトタイプ用 Ver 0.98</option>
-<option>プロトタイプ用 Ver 0.99</option>
-<option>プロトタイプ用 Ver 0.99.1</option>
 <option>プロトタイプ用 Ver 0.99.2</option>
-<option>製品候補用 Ver 0.99</option>
-<option>製品候補用 Ver 0.99.1</option>
-<option>製品候補用 Ver 0.99.2</option>
-<option>製品候補用 Ver 0.99.3</option>
-<option>製品候補用 Ver 0.99.4</option>
-<option>製品候補用 Ver 0.99.5</option>
-<option selected>製品候補用 Ver 0.99.6</option>
+<option selected>製品候補用 Ver 0.99.7</option>
 </select>
 <button onclick="flash();">書き込み</button>
 

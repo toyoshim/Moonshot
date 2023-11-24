@@ -32,7 +32,7 @@ enum {
 #endif
 };
 
-#define MD_STATE_TIMEOUT 1024
+#define MD_STATE_TIMEOUT 2048
 #define MD_STATE_SHORT_TIMEOUT 64
 
 static volatile uint8_t out[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
