@@ -10,6 +10,7 @@
 #include "chlib/src/io.h"
 #include "chlib/src/timer3.h"
 #include "gpio.h"
+#include "grove.h"
 #include "io.h"
 #include "led.h"
 #include "serial.h"
@@ -120,7 +121,7 @@ static bool wait_negedge(uint16_t timeout) {
   return count != timeout;
 }
 
-void gpio_int(void) __interrupt(INT_NO_GPIO) __using(0) {
+static void gpio_int(void) {
   if (mode == MODE_MD) {
     // The fist posedge.
     if (!wait_negedge(MD_STATE_TIMEOUT)) {
@@ -220,6 +221,8 @@ void atari_init(void) {
 #endif
 
   frame_timer = timer3_tick_msec();
+
+  grove_init(gpio_int);
 }
 
 void atari_poll(void) {
@@ -360,7 +363,7 @@ void atari_poll(void) {
       case MODE_NORMAL:
         settings_select(0);
         settings_led_mode(L_ON);
-        gpio_enable_interrupt(0, true);
+        grove_update_interrupt(0);
         break;
       case MODE_CYBER:
         settings_select(1);
@@ -368,17 +371,17 @@ void atari_poll(void) {
         SET_LOW_CYCLE_SIGNALS(0x0f);
         RESET_READY();
 #ifdef PROTO1
-        gpio_enable_interrupt(bIE_RXD1_LO, true);
+        grove_update_interrupt(bIE_RXD1_LO);
 #else
         P2 = 0xdf;
-        gpio_enable_interrupt(bIE_P1_4_LO, true);
+        grove_update_interrupt(bIE_P1_4_LO);
 #endif
         break;
       case MODE_MD:
         // PROTO1 doesn't enter this code path.
         settings_select(0);
         settings_led_mode(L_BLINK_TWICE);
-        gpio_enable_interrupt(bIE_IO_EDGE | bIE_P5_7_HI, true);
+        grove_update_interrupt(bIE_P5_7_HI);
         break;
     }
   }
