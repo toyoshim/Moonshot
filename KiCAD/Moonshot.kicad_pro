@@ -56,7 +56,16 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "lib_footprint_mismatch|23498928|50126250|2de88043-9375-4061-94e1-8acf07c0e5ad|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|32548000|24140450|576cf7be-ce1a-45a7-a202-2a9e8b9638c1|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|25748000|25839200|576cf7be-ce1a-45a7-a202-2a9e8b9638c1|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|41648000|21739200|576cf7be-ce1a-45a7-a202-2a9e8b9638c1|00000000-0000-0000-0000-000000000000",
+        "text_height|37300000|45500000|7a4cd3e1-9559-4664-96b5-dcbe04a5fcc1|00000000-0000-0000-0000-000000000000",
+        "text_height|45720000|46990000|30d55b90-6136-4f41-8f2d-6da05f1cf123|00000000-0000-0000-0000-000000000000",
+        "text_height|46355000|24130000|1d48dd55-ee71-4b6d-af27-aa8ffe9b5dd1|00000000-0000-0000-0000-000000000000",
+        "text_thickness|37300000|45500000|7a4cd3e1-9559-4664-96b5-dcbe04a5fcc1|00000000-0000-0000-0000-000000000000"
+      ],
       "meta": {
         "version": 2
       },
@@ -497,7 +506,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "JoynerX.kicad_pro",
+    "filename": "Moonshot.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -531,7 +540,7 @@
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.25,
+        "track_width": 0.3,
         "via_diameter": 0.8,
         "via_drill": 0.4,
         "wire_width": 6
@@ -557,8 +566,8 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "",
-      "specctra_dsn": "JoynerX.dsn",
+      "netlist": "../../../../../../../Applications/KiCad7/",
+      "specctra_dsn": "Moonshot.dsn",
       "step": "",
       "vrml": ""
     },

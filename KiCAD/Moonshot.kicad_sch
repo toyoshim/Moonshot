@@ -455,6 +455,67 @@
         )
       )
     )
+    (symbol "Connector_Generic:Conn_01x04" (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
+      (property "Reference" "J" (at 0 5.08 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Value" "Conn_01x04" (at 0 -7.62 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Footprint" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Datasheet" "~" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_keywords" "connector" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_fp_filters" "Connector*:*_1x??_*" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (symbol "Conn_01x04_1_1"
+        (rectangle (start -1.27 -4.953) (end 0 -5.207)
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (rectangle (start -1.27 -2.413) (end 0 -2.667)
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (rectangle (start -1.27 0.127) (end 0 -0.127)
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (rectangle (start -1.27 2.667) (end 0 2.413)
+          (stroke (width 0.1524) (type default))
+          (fill (type none))
+        )
+        (rectangle (start -1.27 3.81) (end 1.27 -6.35)
+          (stroke (width 0.254) (type default))
+          (fill (type background))
+        )
+        (pin passive line (at -5.08 2.54 0) (length 3.81)
+          (name "Pin_1" (effects (font (size 1.27 1.27))))
+          (number "1" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at -5.08 0 0) (length 3.81)
+          (name "Pin_2" (effects (font (size 1.27 1.27))))
+          (number "2" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at -5.08 -2.54 0) (length 3.81)
+          (name "Pin_3" (effects (font (size 1.27 1.27))))
+          (number "3" (effects (font (size 1.27 1.27))))
+        )
+        (pin passive line (at -5.08 -5.08 0) (length 3.81)
+          (name "Pin_4" (effects (font (size 1.27 1.27))))
+          (number "4" (effects (font (size 1.27 1.27))))
+        )
+      )
+    )
     (symbol "Device:C" (pin_numbers hide) (pin_names (offset 0.254)) (in_bom yes) (on_board yes)
       (property "Reference" "C" (at 0.635 2.54 0)
         (effects (font (size 1.27 1.27)) (justify left))
@@ -1079,7 +1140,6 @@
   (no_connect (at 90.17 97.79) (uuid 4a1ecbc9-02eb-42f8-8be9-148c7e17ee4b))
   (no_connect (at 90.17 80.01) (uuid 56944d3c-2976-4ef6-9c54-205a3e6f41e5))
   (no_connect (at 64.77 41.91) (uuid 5c0807f1-e850-494d-aa78-0c917a6b5639))
-  (no_connect (at 90.17 54.61) (uuid 61d90b1f-898a-4b84-a998-280992c70763))
   (no_connect (at 64.77 44.45) (uuid 74a5db7b-f6d3-4a77-8be8-ee12c3ea244b))
   (no_connect (at 64.77 54.61) (uuid 784ed614-d96c-4440-8ef4-1ff92c01b6ac))
   (no_connect (at 135.89 61.595) (uuid 7ece883a-5a52-4239-8564-5eae0e485d6a))
@@ -1091,9 +1151,7 @@
   (no_connect (at 64.77 59.69) (uuid ba055765-5ff4-4d34-bb60-4af135c69094))
   (no_connect (at 90.17 127) (uuid c3a486f6-e6b5-4ef0-8d6d-ea8c90990910))
   (no_connect (at 64.77 77.47) (uuid d09a9c25-c89f-4bd9-86ca-34a302c1e73e))
-  (no_connect (at 90.17 64.77) (uuid d9270f0d-c5fc-4843-9568-3c797b8d19b6))
   (no_connect (at 90.17 62.23) (uuid da260559-db03-4156-a5b3-da13d9569e04))
-  (no_connect (at 90.17 67.31) (uuid e72e4037-5543-4a76-ade5-d2e42a510931))
   (no_connect (at 90.17 74.93) (uuid ed7f4abb-b44d-4247-8869-956d643ffd49))
   (no_connect (at 64.77 52.07) (uuid f77e1cf4-f869-4f65-a4b1-81444c8c2393))
   (no_connect (at 90.17 77.47) (uuid ff6e4511-dac5-4a71-85d2-a18f7eddd5e8))
@@ -1133,6 +1191,10 @@
   (wire (pts (xy 149.225 149.86) (xy 158.115 149.86))
     (stroke (width 0) (type default))
     (uuid 1387e769-1227-4877-b790-cb0beb14dd8a)
+  )
+  (wire (pts (xy 186.055 121.285) (xy 193.04 121.285))
+    (stroke (width 0) (type default))
+    (uuid 1437594e-1f0d-4c7a-8b5d-860ecfadaaa8)
   )
   (wire (pts (xy 55.245 80.01) (xy 64.77 80.01))
     (stroke (width 0) (type default))
@@ -1193,6 +1255,10 @@
   (wire (pts (xy 44.45 82.55) (xy 64.77 82.55))
     (stroke (width 0) (type default))
     (uuid 3fe07391-d39a-4dd0-8d00-e9e9b8f7db9f)
+  )
+  (wire (pts (xy 186.055 123.825) (xy 193.04 123.825))
+    (stroke (width 0) (type default))
+    (uuid 464b3a27-cba3-49ca-90c3-b3752d274307)
   )
   (wire (pts (xy 163.83 99.06) (xy 168.91 99.06))
     (stroke (width 0) (type default))
@@ -1266,6 +1332,10 @@
     (stroke (width 0) (type default))
     (uuid 87d359ae-bab2-4a3b-9bb2-9046e7ab6d92)
   )
+  (wire (pts (xy 186.055 118.745) (xy 193.04 118.745))
+    (stroke (width 0) (type default))
+    (uuid 8ad56306-7eac-43d9-9ee3-13ca6e6dec46)
+  )
   (wire (pts (xy 55.245 90.17) (xy 64.77 90.17))
     (stroke (width 0) (type default))
     (uuid 8ca6dd96-9051-47c1-95cf-a7044adb19f3)
@@ -1306,6 +1376,10 @@
     (stroke (width 0) (type default))
     (uuid 993928ae-4762-4378-8605-5a82a79f7717)
   )
+  (wire (pts (xy 90.17 64.77) (xy 97.79 64.77))
+    (stroke (width 0) (type default))
+    (uuid 9946a2ae-9d93-49d9-9ef9-f355cf2a94a9)
+  )
   (wire (pts (xy 183.515 99.06) (xy 194.31 99.06))
     (stroke (width 0) (type default))
     (uuid a087a2bc-f92e-4674-a1ce-66bce677a4b3)
@@ -1330,6 +1404,10 @@
     (stroke (width 0) (type default))
     (uuid b1da7e81-56a9-450e-91dc-9c399981d82c)
   )
+  (wire (pts (xy 90.17 67.31) (xy 97.79 67.31))
+    (stroke (width 0) (type default))
+    (uuid b5a50b1a-a2c1-45c9-a9f0-b57a7dcb9a07)
+  )
   (wire (pts (xy 55.245 46.99) (xy 64.77 46.99))
     (stroke (width 0) (type default))
     (uuid b83b98fc-57c8-49b2-986b-342b74b98c40)
@@ -1345,6 +1423,10 @@
   (wire (pts (xy 146.05 51.435) (xy 153.67 51.435))
     (stroke (width 0) (type default))
     (uuid c0371e03-76fd-46d0-9c7d-ec20386a79f2)
+  )
+  (wire (pts (xy 90.17 54.61) (xy 97.79 54.61))
+    (stroke (width 0) (type default))
+    (uuid c0ec453f-0700-4b2b-86dc-be55395bffc3)
   )
   (wire (pts (xy 180.975 66.04) (xy 188.595 66.04))
     (stroke (width 0) (type default))
@@ -1373,6 +1455,10 @@
   (wire (pts (xy 55.245 64.77) (xy 64.77 64.77))
     (stroke (width 0) (type default))
     (uuid da3e97a3-2f13-4ea0-8965-0ad8353412ef)
+  )
+  (wire (pts (xy 186.055 116.205) (xy 193.04 116.205))
+    (stroke (width 0) (type default))
+    (uuid e211fb1d-9ea7-4624-84a1-aed725a7f7a9)
   )
   (wire (pts (xy 55.245 74.93) (xy 64.77 74.93))
     (stroke (width 0) (type default))
@@ -1418,6 +1504,10 @@
   (label "H1_D+" (at 91.44 87.63 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 0b2fb22f-eae5-4f42-9fbd-3e69ec41b71a)
+  )
+  (label "SDA" (at 91.44 67.31 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 0d4503b3-3ab3-427c-ab03-b4b3dff2d75a)
   )
   (label "H2_D-" (at 91.44 90.17 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1478,6 +1568,10 @@
   (label "B2" (at 115.57 127 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 4fda88c8-d38e-4cd5-ab63-a98e4904ad27)
+  )
+  (label "SDA" (at 91.44 54.61 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 54601f79-0642-452e-9c88-695bf7fa9939)
   )
   (label "JOY_B1" (at 90.805 149.86 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1555,6 +1649,10 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid a34e71c3-b321-4340-ab73-558aeb993dc7)
   )
+  (label "SDA" (at 186.055 121.285 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid a6a062a3-2f49-4ab1-bbe7-ef09174d455b)
+  )
   (label "B6" (at 55.88 64.77 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid b0bfecf0-a633-4a0c-8025-eb3ff91873ad)
@@ -1578,6 +1676,10 @@
   (label "JOY_COM" (at 114.3 157.48 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid bd9f5c85-470d-4f10-b918-994d52a1da8e)
+  )
+  (label "SCL" (at 90.17 64.77 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid c438287f-d267-4c29-bacc-95d5d6bf7307)
   )
   (label "LEFT" (at 55.88 102.87 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
@@ -1619,6 +1721,10 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid f400bef0-3140-4f56-b4fd-15df6b1de52f)
   )
+  (label "SCL" (at 186.055 123.825 0) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid f4f4bd7f-bac8-460c-8fd0-4b287834a56b)
+  )
 
   (symbol (lib_id "power:VCC") (at 163.83 91.44 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
@@ -1637,7 +1743,7 @@
     )
     (pin "1" (uuid 58d181d7-cbab-4158-9fbf-ed5cae40f396))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR012") (unit 1)
         )
@@ -1662,7 +1768,7 @@
     )
     (pin "1" (uuid 0ee84ff0-6ee8-4db6-8071-e18418ae26f0))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR013") (unit 1)
         )
@@ -1687,7 +1793,7 @@
     )
     (pin "1" (uuid 91c6ac6c-a10d-49e4-886b-d7e8471969b0))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR09") (unit 1)
         )
@@ -1723,7 +1829,7 @@
     (pin "8" (uuid 8b6cc298-86ec-4cb0-893a-b8b2dadf0883))
     (pin "9" (uuid fd102f3e-f426-4d33-bca7-1207c2beac59))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "J3") (unit 1)
         )
@@ -1755,7 +1861,7 @@
     (pin "4" (uuid f1340fd2-be51-4fc6-aa7f-cd0041f9b6b1))
     (pin "5" (uuid 1edfd05f-f73d-4312-baa4-144e0d6a5285))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "J1") (unit 1)
         )
@@ -1798,7 +1904,7 @@
     (pin "8" (uuid 1e621ab5-802c-41f2-a133-7fe3f1cb5025))
     (pin "9" (uuid 6914214c-95d4-4b11-8e3e-be97dcac6589))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "U3") (unit 1)
         )
@@ -1823,7 +1929,7 @@
     )
     (pin "1" (uuid 803c19b1-c481-4c9f-b3b7-93c5bbbc844f))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR08") (unit 1)
         )
@@ -1848,7 +1954,7 @@
     )
     (pin "1" (uuid d97b75fa-e8f0-44ae-b38f-85650e6d206e))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR03") (unit 1)
         )
@@ -1873,7 +1979,7 @@
     )
     (pin "1" (uuid 9f3325f9-e749-4042-886b-a958689dac7a))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR06") (unit 1)
         )
@@ -1899,7 +2005,7 @@
     (pin "1" (uuid 24212666-a616-45e3-9462-9c5a16767b99))
     (pin "2" (uuid 737eb144-d96d-4458-914a-6ae2d639051b))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "C5") (unit 1)
         )
@@ -1924,9 +2030,34 @@
     )
     (pin "1" (uuid 5cb094d8-8871-48aa-b54f-ec7238403a3c))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR019") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:GND") (at 186.055 116.205 270) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 4461f58d-2679-478f-b299-b7cabe4661e2)
+    (property "Reference" "#PWR021" (at 179.705 116.205 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "GND" (at 182.8801 116.5218 90)
+      (effects (font (size 1.27 1.27)) (justify right))
+    )
+    (property "Footprint" "" (at 186.055 116.205 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 186.055 116.205 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 5a1eff0f-da13-45d4-956f-e5b19c26274f))
+    (instances
+      (project "Moonshot"
+        (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
+          (reference "#PWR021") (unit 1)
         )
       )
     )
@@ -1950,7 +2081,7 @@
     (pin "1" (uuid d7b4e083-7ef8-4f3a-9e37-936e2e3730c6))
     (pin "2" (uuid 55384fea-dc49-48b2-ad54-9cdb27022f6a))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "C3") (unit 1)
         )
@@ -1975,7 +2106,7 @@
     )
     (pin "1" (uuid 2ef450ad-ff6c-45e5-ae1e-a06b08ce3f43))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR05") (unit 1)
         )
@@ -2004,7 +2135,7 @@
     (pin "1" (uuid bf97e89f-03db-4ee6-be18-6a84f7a9d2ab))
     (pin "2" (uuid 6c89771d-7e4d-498f-b5f5-5d40bf02e279))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "C2") (unit 1)
         )
@@ -2047,7 +2178,7 @@
     (pin "8" (uuid dd44f840-8dd6-4833-ab51-c11c939623f6))
     (pin "9" (uuid d4ed5a19-586f-4e6b-a23d-539d03c42933))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "U2") (unit 1)
         )
@@ -2072,7 +2203,7 @@
     )
     (pin "1" (uuid 4f022f55-4546-433a-8495-f35a35a7b17a))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#FLG02") (unit 1)
         )
@@ -2097,7 +2228,7 @@
     )
     (pin "1" (uuid 07a65398-7e80-4966-8039-cd5d563ad4ce))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR017") (unit 1)
         )
@@ -2126,7 +2257,7 @@
     (pin "1" (uuid 079f614f-b746-483b-b6c9-4bc29d282b11))
     (pin "2" (uuid 8a5af61e-4b69-4973-8492-e1feb7c3aae7))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "J6") (unit 1)
         )
@@ -2155,7 +2286,7 @@
     (pin "1" (uuid acfd8872-a7a6-472d-9a9d-a2b13e897df9))
     (pin "2" (uuid a0ac84aa-b441-4293-8883-9eeac7941fe1))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "D1") (unit 1)
         )
@@ -2181,9 +2312,40 @@
     (pin "1" (uuid 7920ebd0-d4dd-4ac6-8545-ad5b29b234b9))
     (pin "2" (uuid 3019ea69-adee-48aa-915a-409b01be5276))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "C4") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Connector_Generic:Conn_01x04") (at 198.12 118.745 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 9f90cfcc-3d96-465b-ba14-cc741690dedb)
+    (property "Reference" "J4" (at 200.152 119.3713 0)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Value" "HY2.0-4P" (at 200.152 121.2923 0)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Footprint" "toyoshim:CONN-TH_4P-P2.00_HX20020-4A_2" (at 198.12 118.745 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "~" (at 198.12 118.745 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "LCSC" "C7429580" (at 198.12 118.745 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid e4145056-514a-4c21-8160-2d0e7fdf99ae))
+    (pin "2" (uuid e890bc8a-8bda-4586-b55f-ef9de54e6dfb))
+    (pin "3" (uuid d8f7ba78-9c5c-467a-9fe4-49b64fdba7a9))
+    (pin "4" (uuid 554f6f65-8f7c-4b65-b3cd-2937435b6ca3))
+    (instances
+      (project "Moonshot"
+        (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
+          (reference "J4") (unit 1)
         )
       )
     )
@@ -2213,7 +2375,7 @@
     (pin "4" (uuid 7492cae1-b340-4f08-8464-a3d1706e3448))
     (pin "5" (uuid a9fef907-71d8-414e-80de-b8385553e0ab))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "J2") (unit 1)
         )
@@ -2238,7 +2400,7 @@
     )
     (pin "1" (uuid bc45e833-616a-497a-814b-014d8e4a9720))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR02") (unit 1)
         )
@@ -2267,7 +2429,7 @@
     (pin "1" (uuid 48e98145-1cf1-4437-bca5-ea84603b86a1))
     (pin "2" (uuid 221411ad-5277-46c7-997b-4e4595cbb084))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "R1") (unit 1)
         )
@@ -2292,7 +2454,7 @@
     )
     (pin "1" (uuid 4d062fa4-3414-41c9-a760-e3c1c2edd0df))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR04") (unit 1)
         )
@@ -2367,7 +2529,7 @@
     (pin "8" (uuid a539257e-f3ac-4a04-94f3-062ffa70e20e))
     (pin "9" (uuid b5f1f0e5-9228-483b-88e6-2c7d6bb84572))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "U1") (unit 1)
         )
@@ -2392,9 +2554,34 @@
     )
     (pin "1" (uuid 37d695e0-154a-4f1a-ac5a-715ba7379247))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR010") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:VCC") (at 186.055 118.745 90) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid c21933f6-b994-4728-ad5b-f7d94606c2ad)
+    (property "Reference" "#PWR020" (at 189.865 118.745 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "VCC" (at 182.88 119.0618 90)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Footprint" "" (at 186.055 118.745 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 186.055 118.745 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid d953b52c-1655-4df3-83eb-7759f977457b))
+    (instances
+      (project "Moonshot"
+        (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
+          (reference "#PWR020") (unit 1)
         )
       )
     )
@@ -2417,7 +2604,7 @@
     )
     (pin "1" (uuid b47626a5-519e-41c9-8e9a-6ccf323924b9))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR015") (unit 1)
         )
@@ -2446,7 +2633,7 @@
     (pin "1" (uuid 1daea732-57f0-460e-a017-44b5e742bc6a))
     (pin "2" (uuid 9293f2dc-1a57-4ae3-ba49-0e573b265f25))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "SW1") (unit 1)
         )
@@ -2471,7 +2658,7 @@
     )
     (pin "1" (uuid 202cd164-8095-4525-9048-5bef8db3b1b8))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR011") (unit 1)
         )
@@ -2500,7 +2687,7 @@
     (pin "1" (uuid 7d7a8eb1-5d63-4d05-8ec4-1c7cc1f8d0fa))
     (pin "2" (uuid b1f3c0e9-3fdb-49df-8269-6d52ca4f3bbc))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "C1") (unit 1)
         )
@@ -2525,7 +2712,7 @@
     )
     (pin "1" (uuid 6285a415-6166-470c-a9ed-73655436d905))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR018") (unit 1)
         )
@@ -2550,7 +2737,7 @@
     )
     (pin "1" (uuid 35bc909b-59d8-4c80-8b24-e9d98a626b5b))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR016") (unit 1)
         )
@@ -2575,7 +2762,7 @@
     )
     (pin "1" (uuid 3c4341e4-fe03-4ca6-aa0e-acbb80a1275c))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR014") (unit 1)
         )
@@ -2600,7 +2787,7 @@
     )
     (pin "1" (uuid f45303b1-d801-4d11-9291-0981e64a2d4d))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR07") (unit 1)
         )
@@ -2625,7 +2812,7 @@
     )
     (pin "1" (uuid d82b2d62-3d8b-4b99-9a23-5b1e1edf896f))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#PWR01") (unit 1)
         )
@@ -2651,7 +2838,7 @@
     (pin "1" (uuid 73fca4dd-2659-4eb5-9766-22f388c3c6ac))
     (pin "2" (uuid 45ebacda-d923-481d-a8e7-7c9678d106d6))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "C6") (unit 1)
         )
@@ -2676,7 +2863,7 @@
     )
     (pin "1" (uuid fd810126-658a-4bb9-8d7b-d70343a634df))
     (instances
-      (project "JoynerX"
+      (project "Moonshot"
         (path "/18d2f8f4-5c79-4049-a93f-1d89af805da9"
           (reference "#FLG01") (unit 1)
         )
