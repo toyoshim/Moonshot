@@ -113,6 +113,7 @@ static void end() {}
 void grove_init(void (*interrupt_handler)(void)) {
   struct i2c i2c;
   memset(&i2c, 0, sizeof(i2c));
+  i2c.exclusive_time_raw = 1000 * 16;  // 1sec
   i2c.interrupt_handler = interrupt_handler;
   i2c.sda = I2C_SDA_P0_2;
   i2c.start = start;

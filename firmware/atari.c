@@ -123,6 +123,9 @@ static bool wait_negedge(uint16_t timeout) {
 
 static void gpio_int(void) {
   if (mode == MODE_MD) {
+    if (!GPIO_COM) {
+      return;
+    }
     // The fist posedge.
     if (!wait_negedge(MD_STATE_TIMEOUT)) {
       goto MD_TIMEOUT;
@@ -152,9 +155,10 @@ static void gpio_int(void) {
     P3 = out[1];
     P4_OUT = out[1];
     return;
-  }
-  // MODE_CYBER
-  if (!GPIO_COM) {
+  } else if (mode == MODE_CYBER) {
+    if (GPIO_COM) {
+      return;
+    }
     uint16_t count;
     for (count = 0; count != 256; ++count) {
       ++nop;
@@ -200,7 +204,7 @@ void atari_init(void) {
 #ifdef PROTO1
   uart1_init(UART1_P2, UART1_115200);
 #else
-  pinMode(1, 4, INPUT);  // COM
+  pinMode(1, 4, INPUT_PULLUP);  // COM
 
   pinMode(3, 4, OUTPUT);  // B3
   pinMode(3, 5, OUTPUT);  // START
