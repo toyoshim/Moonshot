@@ -9,10 +9,6 @@
 
 #include "settings.h"
 
-// #define _DBG_HID_REPORT_DUMP
-// #define _DBG_HID_DECODE_DUMP
-// #define _DBG_HUB1_ONLY
-
 static uint8_t digital_map[2][4];
 
 static uint16_t analog[8];
@@ -98,31 +94,7 @@ void controller_update(const uint8_t hub_index,
                        const struct hid_info* info,
                        const uint8_t* data,
                        uint16_t size) {
-#ifdef _DBG_HUB1_ONLY
-  const uint8_t hub = 0;
-  hub_index;
-#else
   const uint8_t hub = hub_index;
-#endif
-#ifdef _DBG_HID_REPORT_DUMP
-  static uint8_t old_data[256];
-  bool modified = false;
-  for (uint8_t i = 0; i < size; ++i) {
-    if (old_data[i] == data[i]) {
-      continue;
-    }
-    modified = true;
-    old_data[i] = data[i];
-  }
-  if (!modified) {
-    return;
-  }
-  Serial.printf("Report %d Bytes: ", size);
-  for (uint8_t i = 0; i < size; ++i) {
-    Serial.printf("%x,", data[i]);
-  }
-  Serial.println("");
-#endif  // _DBG_HID_REPORT_DUMP
   if (info->report_id) {
     if (info->report_id != data[0]) {
       return;
@@ -130,17 +102,6 @@ void controller_update(const uint8_t hub_index,
     data++;
     size--;
   }
-#ifdef _DBG_HID_DECODE_DUMP
-  for (uint8_t i = 0; i < 6; ++i) {
-    uint16_t value = analog_check(info, data, i);
-    Serial.printf("analog %d: %x%x; ", i, value >> 8, value & 0xff);
-  }
-  Serial.printf("digital: ");
-  for (uint8_t i = 0; i < 13; ++i) {
-    Serial.printf("%d ", button_check(info->button[i], data) ? 1 : 0);
-  }
-  Serial.println("");
-#endif  // _DBG_HID_DECODE_DUMP
   controller_reset_digital_map(hub);
 
   if (info->state != HID_STATE_READY) {
