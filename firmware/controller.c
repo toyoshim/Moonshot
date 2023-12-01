@@ -20,8 +20,6 @@ static uint8_t coin_sw[2] = {0, 0};
 static uint8_t digital_map[2][4];
 
 static uint16_t analog[8];
-static uint16_t rotary[2];
-static uint16_t screen[4];
 
 static bool button_check(uint16_t index, const uint8_t* data) {
   if (index == 0xffff) {
@@ -97,12 +95,6 @@ void controller_reset(void) {
   }
   for (uint8_t i = 0; i < 8; ++i) {
     analog[i] = 0;
-  }
-  for (uint8_t i = 0; i < 2; ++i) {
-    rotary[i] = 0;
-  }
-  for (uint8_t i = 0; i < 4; ++i) {
-    screen[i] = 0;
   }
 }
 
@@ -200,12 +192,6 @@ void controller_update(const uint8_t hub_index,
       case AT_ANALOG:
         analog[index] = value;
         break;
-      case AT_ROTARY:
-        rotary[index] = value;
-        break;
-      case AT_SCREEN:
-        screen[index] = value;
-        break;
     }
   }
 
@@ -299,21 +285,6 @@ uint8_t controller_data(uint8_t player, uint8_t index, uint8_t gpout) {
 uint16_t controller_analog(uint8_t index) {
   if (index < 8) {
     return analog[index];
-  }
-  return 0x8000;
-}
-
-uint16_t controller_rotary(uint8_t index) {
-  if (index < 2) {
-    return rotary[index];
-  }
-  return 0x8000;
-}
-
-uint16_t controller_screen(uint8_t index, uint8_t axis) {
-  uint8_t screen_index = (index << 1) + axis;
-  if (screen_index < 4) {
-    return screen[screen_index];
   }
   return 0x8000;
 }

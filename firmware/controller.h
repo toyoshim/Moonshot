@@ -19,7 +19,5 @@ void controller_poll(void);
 uint8_t controller_head(void);
 uint8_t controller_data(uint8_t player, uint8_t index, uint8_t gpout);
 uint16_t controller_analog(uint8_t index);
-uint16_t controller_rotary(uint8_t index);
-uint16_t controller_screen(uint8_t index, uint8_t axis);
 
 #endif  // __controller_h__
