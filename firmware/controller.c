@@ -174,13 +174,12 @@ void controller_update(const uint8_t hub,
   uint8_t alt_digital = 0;
   for (uint8_t i = 0; i < 6; ++i) {
     uint8_t type = settings->analog_type[hub][i];
-    if (type == AT_NONE) {
-      continue;
-    }
     uint8_t index = settings->analog_index[hub][i];
     uint16_t value = analog_check(info, data, i);
     raw_analog[hub][i] = value;
     switch (type) {
+      case AT_NONE:
+        break;
       case AT_DIGITAL:
         switch (index) {
           case 0:
@@ -222,7 +221,7 @@ void controller_update(const uint8_t hub,
   }
   for (uint8_t i = 0; i < 12; ++i) {
     bool on = button_check(info->button[i], data);
-    raw_data |= on ? (1 << (12 - i)) : 0;
+    raw_data |= on ? (1 << (11 - i)) : 0;
     uint8_t rapid_fire = settings->rapid_fire[hub][i];
     update_digital_map(digital_map[hub], settings->digital_map[hub][4 + i].data,
                        (settings->sequence[rapid_fire].on && on) ^

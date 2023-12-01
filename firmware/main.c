@@ -39,8 +39,7 @@ void main(void) {
   hid.get_flags = get_flags;
   hid_init(&hid);
 
-  Serial.printf("MP17-Moonshot ver %d.%02d.%d\n", VERSION_MAJOR, VERSION_MINOR,
-                VERSION_PATCH);
+  Serial.printf("MP17-Moonshot ver " VERSION_STRING);
 
   for (;;) {
     hid_poll();
