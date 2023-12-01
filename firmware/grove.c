@@ -59,46 +59,46 @@ static bool read(uint8_t* data) {
   }
   switch (reg) {
     case 0x00:
-      *data = controller_data(0, 0);
+      *data = controller_raw_digital(0) >> 8;
       break;
     case 0x01:
-      *data = controller_data(0, 1);
+      *data = controller_raw_digital(0);
       break;
     case 0x02:
-      *data = controller_analog(0) >> 8;
+      *data = controller_raw_analog(0, 0) >> 8;
       break;
     case 0x03:
-      *data = controller_analog(0);
+      *data = controller_raw_analog(0, 0);
       break;
     case 0x04:
-      *data = controller_analog(1) >> 8;
+      *data = controller_raw_analog(0, 1) >> 8;
       break;
     case 0x05:
-      *data = controller_analog(1);
+      *data = controller_raw_analog(0, 1);
       break;
     case 0x06:
-      *data = controller_analog(2) >> 8;
+      *data = controller_raw_analog(0, 2) >> 8;
       break;
     case 0x07:
-      *data = controller_analog(2);
+      *data = controller_raw_analog(0, 2);
       break;
     case 0x08:
-      *data = controller_analog(3) >> 8;
+      *data = controller_raw_analog(0, 3) >> 8;
       break;
     case 0x09:
-      *data = controller_analog(3);
+      *data = controller_raw_analog(0, 3);
       break;
     case 0x0a:
-      *data = controller_analog(4) >> 8;
+      *data = controller_raw_analog(0, 4) >> 8;
       break;
     case 0x0b:
-      *data = controller_analog(4);
+      *data = controller_raw_analog(0, 4);
       break;
     case 0x0c:
-      *data = controller_analog(5) >> 8;
+      *data = controller_raw_analog(0, 5) >> 8;
       break;
     case 0x0d:
-      *data = controller_analog(5);
+      *data = controller_raw_analog(0, 5);
       break;
     default:
       *data = 0;
