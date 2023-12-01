@@ -19,8 +19,9 @@
 
 #include "controller.h"
 #include "settings.h"
+#include "version.h"
 
-// #define PROTO1
+#define PROTO1
 
 enum {
   MODE_NORMAL = 0,  // Normal 2 buttons, or Capcom 6 buttons mode
@@ -89,6 +90,23 @@ static uint8_t swap[16] = {
     0xc3,  // xxxx1111 => 11xxxx11
 };
 #endif
+
+static void executeCommand(uint8_t command, uint8_t* result) {
+  switch (command) {
+    case 0x00:  // Get Version
+      result[0] = VERSION_MAJOR;
+      result[1] = VERSION_MINOR;
+      result[2] = VERSION_PATCH;
+      break;
+    default:  // Unknown
+      result[0] = command;
+      result[1] = 0xff;
+      result[2] = 0xff;
+      result[3] = 0xff;  // Invalid SUM
+      return;
+  }
+  result[3] = command ^ result[0] ^ result[1] ^ result[2];
+}
 
 static void wait(uint16_t count) {
   for (uint16_t i = 0; i < count; ++i) {
@@ -177,18 +195,48 @@ static void gpio_int(void) {
     for (uint8_t n = 0; n < 5; ++n) {
       wait(count);
     }
-    for (uint8_t n = 0; n < 6; ++n) {
+    uint16_t command = 0;
+    uint8_t n;
+    for (n = 0; n < 6; ++n) {
+      command <<= 1;
+      command |= GPIO_COM ? 1 : 0;
       SET_LOW_CYCLE_SIGNALS(out[n] >> 4);
       wait(count);
       SET_READY();
       wait(count << 1);
       RESET_READY();
 
+      command <<= 1;
+      command |= GPIO_COM ? 1 : 0;
       SET_HIGH_CYCLE_SIGNALS(out[n] & 0x0f);
       wait(count);
       SET_READY();
       wait(count << 1);
       RESET_READY();
+    }
+    if ((command >> 8) == 0x0a) {
+      uint8_t data = command;
+      while (data != 0xff) {
+        uint8_t result[4];
+        executeCommand(data, result);
+        for (n = 0; n < 4; ++n) {
+          data <<= 1;
+          data |= GPIO_COM ? 1 : 0;
+          SET_LOW_CYCLE_SIGNALS(result[n] >> 4);
+          wait(count);
+          SET_READY();
+          wait(count << 1);
+          RESET_READY();
+
+          data <<= 1;
+          data |= GPIO_COM ? 1 : 0;
+          SET_HIGH_CYCLE_SIGNALS(result[n] & 0x0f);
+          wait(count);
+          SET_READY();
+          wait(count << 1);
+          RESET_READY();
+        }
+      }
     }
     wait(count);
     SET_LOW_CYCLE_SIGNALS(0x0f);

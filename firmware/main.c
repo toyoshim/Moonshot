@@ -9,10 +9,9 @@
 #include "atari.h"
 #include "controller.h"
 #include "settings.h"
+#include "version.h"
 
 // #define _DBG
-
-#define VER "0.99.8"
 
 static struct settings* settings = 0;
 
@@ -40,7 +39,8 @@ void main(void) {
   hid.get_flags = get_flags;
   hid_init(&hid);
 
-  Serial.printf("MP17-Moonshot ver %s\n", VER);
+  Serial.printf("MP17-Moonshot ver %d.%02d.%d\n", VERSION_MAJOR, VERSION_MINOR,
+                VERSION_PATCH);
 
   for (;;) {
     hid_poll();
