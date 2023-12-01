@@ -99,34 +99,18 @@ static void executeCommand(uint8_t command, uint8_t* result) {
       result[1] = VERSION_MINOR;
       result[2] = VERSION_PATCH;
       break;
-    case 0x01:  // Get P1 Raw Digital
+    case 0x01:  // Get Raw Digital
       u16 = controller_raw_digital(0);
       result[0] = u16 >> 8;
       result[1] = u16 & 0xff;
       result[2] = 0;
       break;
-    case 0x02:  // Get P1 Raw Analog 1-3
+    case 0x02:  // Get Raw Analog 1-3
       result[0] = controller_raw_analog(0, 0) >> 8;
       result[1] = controller_raw_analog(0, 1) >> 8;
       result[2] = controller_raw_analog(0, 2) >> 8;
       break;
-    case 0x03:  // Get P1 Raw Analog 4-6
-      result[0] = controller_raw_analog(0, 3) >> 8;
-      result[1] = controller_raw_analog(0, 4) >> 8;
-      result[2] = controller_raw_analog(0, 5) >> 8;
-      break;
-    case 0x04:  // Get P2 Raw Digital
-      u16 = controller_raw_digital(0);
-      result[0] = u16 >> 8;
-      result[1] = u16 & 0xff;
-      result[2] = 0;
-      break;
-    case 0x05:  // Get P2 Raw Analog 1-3
-      result[0] = controller_raw_analog(0, 0) >> 8;
-      result[1] = controller_raw_analog(0, 1) >> 8;
-      result[2] = controller_raw_analog(0, 2) >> 8;
-      break;
-    case 0x06:  // Get P2 Raw Analog 4-6
+    case 0x03:  // Get Raw Analog 4-6
       result[0] = controller_raw_analog(0, 3) >> 8;
       result[1] = controller_raw_analog(0, 4) >> 8;
       result[2] = controller_raw_analog(0, 5) >> 8;
@@ -386,7 +370,7 @@ void atari_poll(void) {
     out[3] = (a0 << 4) | (a1 & 0x0f);
     // Ch.2 low, Ch.3 low
     out[4] = (a2 << 4) | (a3 & 0x0f);
-    // A, B, A', B7, -, -, -, -
+    // A, B, A', B', -, -, -, -
     out[5] = (d0 << 6) | ((d1 & 0x0c) << 2) | 0x0f;
     // Serial.printf("%x %x %x %x %x%x\n", a0, a1, a2, a3, d0, d1);
   } else if (mode == MODE_MD) {
