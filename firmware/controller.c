@@ -13,10 +13,6 @@
 // #define _DBG_HID_DECODE_DUMP
 // #define _DBG_HUB1_ONLY
 
-static bool test_sw = false;
-static bool service_sw = false;
-static uint8_t coin_sw[2] = {0, 0};
-
 static uint8_t digital_map[2][4];
 
 static uint16_t analog[8];
@@ -253,33 +249,14 @@ void controller_update(const uint8_t hub_index,
                         button_check(info->button[i], data)) ^
                            settings->sequence[rapid_fire].invert);
   }
-
-  coin_sw[hub] = (coin_sw[hub] << 1) | ((digital_map[hub][0] >> 6) & 1);
 }
 
-void controller_poll(void) {
-  service_sw = settings_service_pressed();
-  test_sw = settings_test_pressed();
-}
-
-uint8_t controller_head(void) {
-  return test_sw ? 0x80 : 0;
-}
-
-uint8_t controller_data(uint8_t player, uint8_t index, uint8_t gpout) {
-  gpout;
+uint8_t controller_data(uint8_t player, uint8_t index) {
   uint8_t line = (player << 1) + index;
   if (line >= 4) {
     return 0;
   }
-  uint8_t data = digital_map[0][line] | digital_map[1][line];
-  if (!line) {
-    // data &= ~0x40;
-    if (!player && service_sw) {
-      data |= 0x40;
-    }
-  }
-  return data;
+  return digital_map[0][line] | digital_map[1][line];
 }
 
 uint16_t controller_analog(uint8_t index) {

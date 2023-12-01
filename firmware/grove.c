@@ -59,10 +59,10 @@ static bool read(uint8_t* data) {
   }
   switch (reg) {
     case 0x00:
-      *data = controller_data(0, 0, 0);
+      *data = controller_data(0, 0);
       break;
     case 0x01:
-      *data = controller_data(0, 1, 0);
+      *data = controller_data(0, 1);
       break;
     case 0x02:
       *data = controller_analog(0) >> 8;

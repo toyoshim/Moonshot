@@ -45,7 +45,6 @@ void main(void) {
   for (;;) {
     hid_poll();
     settings_poll();
-    controller_poll();
     atari_poll();
 
 #ifdef _DBG

@@ -288,7 +288,7 @@ void atari_poll(void) {
     // P2_4: 1  3
     // P2_5: 2 Start
 
-    uint8_t buttons = controller_data(0, 0, 0);
+    uint8_t buttons = controller_data(0, 0);
     out[0] = ((buttons & 0x20) ? 0 : 0x01) | ((buttons & 0x10) ? 0 : 0x02) |
              ((buttons & 0x08) ? 0 : 0x04) | ((buttons & 0x04) ? 0 : 0x08) |
              ((buttons & 0x02) ? 0 : 0x10) | ((buttons & 0x01) ? 0 : 0x20);
@@ -300,7 +300,7 @@ void atari_poll(void) {
       out[0] &= 0xf3;  // START == L + R
     }
 
-    buttons = controller_data(0, 1, 0);
+    buttons = controller_data(0, 1);
     out[1] |= ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
               ((buttons & 0x40) ? 0 : 0x04) | ((buttons & 0x80) ? 0 : 0x10);
     P2 = out[0];
@@ -317,7 +317,7 @@ void atari_poll(void) {
     // P3_7: U  B6
     // P4_0: L  B4
     // P4_1: D  B5
-    uint8_t buttons = controller_data(0, 0, 0);
+    uint8_t buttons = controller_data(0, 0);
     out[0] = ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
              ((buttons & 0x08) ? 0 : 0x04) | ((buttons & 0x04) ? 0 : 0x08) |
              ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x02) ? 0 : 0x20);
@@ -329,7 +329,7 @@ void atari_poll(void) {
       out[0] &= 0xf3;  // START == L + R
     }
 
-    buttons = controller_data(0, 1, 0);
+    buttons = controller_data(0, 1);
     out[1] |= ((buttons & 0x40) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
               ((buttons & 0x80) ? 0 : 0x10) | ((buttons & 0x10) ? 0 : 0x80);
     P2 = out[0];
@@ -337,8 +337,8 @@ void atari_poll(void) {
     P4_OUT = out[1];
 #endif
   } else if (mode == MODE_CYBER) {
-    uint8_t d0 = ~controller_data(0, 0, 0);
-    uint8_t d1 = ~controller_data(0, 1, 0);
+    uint8_t d0 = ~controller_data(0, 0);
+    uint8_t d1 = ~controller_data(0, 1);
     uint8_t a0 = controller_analog(0) >> 8;
     uint8_t a1 = controller_analog(1) >> 8;
     uint8_t a2 = controller_analog(2) >> 8;
@@ -370,7 +370,7 @@ void atari_poll(void) {
     // P3_7: U  U      B6
     // P4_0: L  L      B4
     // P4_1: D  D      B5
-    uint8_t buttons = controller_data(0, 0, 0);
+    uint8_t buttons = controller_data(0, 0);
     // D | U | Start | B1
     out[0] = ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
              ((buttons & 0x80) ? 0 : 0x10) | ((buttons & 0x02) ? 0 : 0x20);
@@ -382,7 +382,7 @@ void atari_poll(void) {
     // B2 | Select
     uint8_t out2 =
         ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x40) ? 0 : 0x40);
-    buttons = controller_data(0, 1, 0);
+    buttons = controller_data(0, 1);
     // | B3
     out[1] = out1 | ((buttons & 0x80) ? 0 : 0x20);
     // | B3 | B4 | B5 | B6
