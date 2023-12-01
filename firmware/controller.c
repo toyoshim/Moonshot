@@ -16,7 +16,6 @@
 static bool test_sw = false;
 static bool service_sw = false;
 static uint8_t coin_sw[2] = {0, 0};
-static uint8_t coin[2] = {0, 0};
 static uint8_t mahjong[4] = {0, 0, 0, 0};
 
 static uint8_t digital_map[2][4];
@@ -130,9 +129,6 @@ static void mahjong_update(const uint8_t* data) {
     }
   }
   coin_sw[0] = (coin_sw[0] << 1) | (coin_key ? 1 : 0);
-  if ((coin_sw[0] & 3) == 1) {
-    coin[0]++;
-  }
 }
 
 static void controller_reset_digital_map(uint8_t player) {
@@ -334,9 +330,6 @@ void controller_update(const uint8_t hub_index,
   }
 
   coin_sw[hub] = (coin_sw[hub] << 1) | ((digital_map[hub][0] >> 6) & 1);
-  if ((coin_sw[hub] & 3) == 1) {
-    coin[hub]++;
-  }
 }
 
 void controller_poll(void) {
@@ -375,10 +368,6 @@ uint8_t controller_data(uint8_t player, uint8_t index, uint8_t gpout) {
   return data;
 }
 
-uint8_t controller_coin(uint8_t player) {
-  return coin[player];
-}
-
 uint16_t controller_analog(uint8_t index) {
   if (index < 8) {
     return analog[index];
@@ -399,16 +388,4 @@ uint16_t controller_screen(uint8_t index, uint8_t axis) {
     return screen[screen_index];
   }
   return 0x8000;
-}
-
-void controller_coin_add(uint8_t player, uint8_t add) {
-  coin[player] += add;
-}
-
-void controller_coin_sub(uint8_t player, uint8_t sub) {
-  coin[player] -= sub;
-}
-
-void controller_coin_set(uint8_t player, uint8_t value) {
-  coin[player] = value;
 }
