@@ -92,11 +92,44 @@ static uint8_t swap[16] = {
 #endif
 
 static void executeCommand(uint8_t command, uint8_t* result) {
+  uint16_t u16;
   switch (command) {
     case 0x00:  // Get Version
       result[0] = VERSION_MAJOR;
       result[1] = VERSION_MINOR;
       result[2] = VERSION_PATCH;
+      break;
+    case 0x01:  // Get P1 Raw Digital
+      u16 = controller_raw_digital(0);
+      result[0] = u16 >> 8;
+      result[1] = u16 & 0xff;
+      result[2] = 0;
+      break;
+    case 0x02:  // Get P1 Raw Analog 1-3
+      result[0] = controller_raw_analog(0, 0) >> 8;
+      result[1] = controller_raw_analog(0, 1) >> 8;
+      result[2] = controller_raw_analog(0, 2) >> 8;
+      break;
+    case 0x03:  // Get P1 Raw Analog 4-6
+      result[0] = controller_raw_analog(0, 3) >> 8;
+      result[1] = controller_raw_analog(0, 4) >> 8;
+      result[2] = controller_raw_analog(0, 5) >> 8;
+      break;
+    case 0x04:  // Get P2 Raw Digital
+      u16 = controller_raw_digital(0);
+      result[0] = u16 >> 8;
+      result[1] = u16 & 0xff;
+      result[2] = 0;
+      break;
+    case 0x05:  // Get P2 Raw Analog 1-3
+      result[0] = controller_raw_analog(0, 0) >> 8;
+      result[1] = controller_raw_analog(0, 1) >> 8;
+      result[2] = controller_raw_analog(0, 2) >> 8;
+      break;
+    case 0x06:  // Get P2 Raw Analog 4-6
+      result[0] = controller_raw_analog(0, 3) >> 8;
+      result[1] = controller_raw_analog(0, 4) >> 8;
+      result[2] = controller_raw_analog(0, 5) >> 8;
       break;
     default:  // Unknown
       result[0] = command;

@@ -9,9 +9,11 @@
 
 #include "settings.h"
 
-static uint8_t digital_map[2][4];
+static uint8_t digital_map[3][4];
+static uint16_t analog[8];  // TODO: split to 2P
 
-static uint16_t analog[8];
+static uint16_t raw_digital[2];
+static uint16_t raw_analog[2][6];
 
 static bool button_check(uint16_t index, const uint8_t* data) {
   if (index == 0xffff) {
@@ -66,9 +68,15 @@ uint16_t analog_check(const struct hid_info* info,
   return 0x8000;
 }
 
-static void controller_reset_digital_map(uint8_t player) {
+static void reset_digital_map(uint8_t player) {
   for (uint8_t i = 0; i < 4; ++i) {
     digital_map[player][i] = 0;
+  }
+}
+
+static void merge_digital_map() {
+  for (uint8_t i = 0; i < 4; ++i) {
+    digital_map[2][i] = digital_map[0][i] | digital_map[1][i];
   }
 }
 
@@ -81,20 +89,29 @@ static void update_digital_map(uint8_t* dst, uint8_t* src, bool on) {
   }
 }
 
+static void reset_raw_data(uint8_t player) {
+  raw_digital[player] = 0;
+  for (uint8_t i = 0; i < 6; ++i) {
+    raw_analog[player][i] = 0;
+  }
+}
+
 void controller_reset(void) {
-  for (uint8_t p = 0; p < 2; ++p) {
-    controller_reset_digital_map(p);
+  for (uint8_t p = 0; p < 3; ++p) {
+    reset_digital_map(p);
   }
   for (uint8_t i = 0; i < 8; ++i) {
     analog[i] = 0;
   }
+  for (uint8_t p = 0; p < 2; ++p) {
+    reset_raw_data(p);
+  }
 }
 
-void controller_update(const uint8_t hub_index,
+void controller_update(const uint8_t hub,
                        const struct hid_info* info,
                        const uint8_t* data,
                        uint16_t size) {
-  const uint8_t hub = hub_index;
   if (info->report_id) {
     if (info->report_id != data[0]) {
       return;
@@ -102,56 +119,19 @@ void controller_update(const uint8_t hub_index,
     data++;
     size--;
   }
-  controller_reset_digital_map(hub);
+  reset_digital_map(hub);
 
   if (info->state != HID_STATE_READY) {
+    merge_digital_map();
+    reset_raw_data(hub);
     return;
   }
 
-  if (info->type == HID_TYPE_KEYBOARD) {
-    return;
-  }
-
-  struct settings* settings = settings_get();
-  // Analog to Digital pad map from another controller.
+  uint16_t raw_data = 0;
   bool u = button_check(info->dpad[0], data);
   bool d = button_check(info->dpad[1], data);
   bool l = button_check(info->dpad[2], data);
   bool r = button_check(info->dpad[3], data);
-
-  uint8_t alt_digital = 0;
-  for (uint8_t i = 0; i < 6; ++i) {
-    uint8_t type = settings->analog_type[hub][i];
-    if (type == AT_NONE) {
-      continue;
-    }
-    uint8_t index = settings->analog_index[hub][i];
-    uint16_t value = analog_check(info, data, i);
-    switch (type) {
-      case AT_DIGITAL:
-        switch (index) {
-          case 0:
-            l |= value < 0x6000;
-            r |= value > 0xa000;
-            break;
-          case 1:
-            u |= value < 0x6000;
-            d |= value > 0xa000;
-            break;
-          case 2:
-            alt_digital |= (value < 0x6000) ? 4 : (value > 0xa000) ? 8 : 0;
-            break;
-          case 3:
-            alt_digital |= (value < 0x6000) ? 1 : (value > 0xa000) ? 2 : 0;
-            break;
-        }
-        break;
-      case AT_ANALOG:
-        analog[index] = value;
-        break;
-    }
-  }
-
   if (info->hat != 0xffff) {
     uint8_t byte = info->hat >> 3;
     uint8_t bit = info->hat & 7;
@@ -187,6 +167,43 @@ void controller_update(const uint8_t hub_index,
         break;
     }
   }
+  raw_data =
+      (u ? 0x8000 : 0) | (d ? 0x4000 : 0) | (l ? 0x2000 : 0) | (r ? 0x1000 : 0);
+
+  struct settings* settings = settings_get();
+  uint8_t alt_digital = 0;
+  for (uint8_t i = 0; i < 6; ++i) {
+    uint8_t type = settings->analog_type[hub][i];
+    if (type == AT_NONE) {
+      continue;
+    }
+    uint8_t index = settings->analog_index[hub][i];
+    uint16_t value = analog_check(info, data, i);
+    raw_analog[hub][i] = value;
+    switch (type) {
+      case AT_DIGITAL:
+        switch (index) {
+          case 0:
+            l |= value < 0x6000;
+            r |= value > 0xa000;
+            break;
+          case 1:
+            u |= value < 0x6000;
+            d |= value > 0xa000;
+            break;
+          case 2:
+            alt_digital |= (value < 0x6000) ? 4 : (value > 0xa000) ? 8 : 0;
+            break;
+          case 3:
+            alt_digital |= (value < 0x6000) ? 1 : (value > 0xa000) ? 2 : 0;
+            break;
+        }
+        break;
+      case AT_ANALOG:
+        analog[index] = value;
+        break;
+    }
+  }
 
   update_digital_map(digital_map[hub], settings->digital_map[hub][0].data, u);
   update_digital_map(digital_map[hub], settings->digital_map[hub][1].data, d);
@@ -204,12 +221,15 @@ void controller_update(const uint8_t hub_index,
                        alt_digital & 8);
   }
   for (uint8_t i = 0; i < 12; ++i) {
+    bool on = button_check(info->button[i], data);
+    raw_data |= on ? (1 << (12 - i)) : 0;
     uint8_t rapid_fire = settings->rapid_fire[hub][i];
     update_digital_map(digital_map[hub], settings->digital_map[hub][4 + i].data,
-                       (settings->sequence[rapid_fire].on &&
-                        button_check(info->button[i], data)) ^
+                       (settings->sequence[rapid_fire].on && on) ^
                            settings->sequence[rapid_fire].invert);
   }
+  raw_digital[hub] = raw_data;
+  merge_digital_map();
 }
 
 uint8_t controller_data(uint8_t player, uint8_t index) {
@@ -217,7 +237,7 @@ uint8_t controller_data(uint8_t player, uint8_t index) {
   if (line >= 4) {
     return 0;
   }
-  return digital_map[0][line] | digital_map[1][line];
+  return digital_map[2][line];
 }
 
 uint16_t controller_analog(uint8_t index) {
@@ -225,4 +245,18 @@ uint16_t controller_analog(uint8_t index) {
     return analog[index];
   }
   return 0x8000;
+}
+
+uint16_t controller_raw_digital(uint8_t player) {
+  if (player < 2) {
+    return raw_digital[player];
+  }
+  return 0;
+}
+
+uint16_t controller_raw_analog(uint8_t player, uint8_t index) {
+  if (player < 2 && index < 6) {
+    return raw_analog[player][index];
+  }
+  return 0;
 }
