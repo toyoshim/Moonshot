@@ -16,19 +16,12 @@
 static bool test_sw = false;
 static bool service_sw = false;
 static uint8_t coin_sw[2] = {0, 0};
-static uint8_t mahjong[4] = {0, 0, 0, 0};
 
 static uint8_t digital_map[2][4];
 
 static uint16_t analog[8];
 static uint16_t rotary[2];
 static uint16_t screen[4];
-
-enum {
-  MODE_NORMAL,
-  MODE_MAHJONG,
-};
-static uint8_t mode = MODE_NORMAL;
 
 static bool button_check(uint16_t index, const uint8_t* data) {
   if (index == 0xffff) {
@@ -81,54 +74,6 @@ uint16_t analog_check(const struct hid_info* info,
     return v;
   }
   return 0x8000;
-}
-
-static void mahjong_update(const uint8_t* data) {
-  uint8_t i;
-  for (i = 0; i < 4; ++i) {
-    mahjong[i] = 0;
-  }
-  if (data[0] & 0x11) {
-    // Ctrl: Kan
-    mahjong[0] |= 0x04;
-  }
-  if (data[0] & 0x22) {
-    // Shift: Reach
-    mahjong[1] |= 0x04;
-  }
-  if (data[0] & 0x44) {
-    // Alt: Pon
-    mahjong[3] |= 0x08;
-  }
-  bool coin_key = false;
-  for (i = 2; i < 8; ++i) {
-    if (0x04 <= data[i] && data[i] <= 0x07) {
-      // A-D
-      mahjong[data[i] - 0x04] |= 0x80;
-    } else if (0x08 <= data[i] && data[i] <= 0x0b) {
-      // E-H
-      mahjong[data[i] - 0x08] |= 0x20;
-    } else if (0x0c <= data[i] && data[i] <= 0x0f) {
-      // I-L
-      mahjong[data[i] - 0x0c] |= 0x10;
-    } else if (0x10 <= data[i] && data[i] <= 0x11) {
-      // M-N
-      mahjong[data[i] - 0x10] |= 0x08;
-    } else if (data[i] == 0x2c) {
-      // Space: Chi
-      mahjong[2] |= 0x08;
-    } else if (data[i] == 0x1d) {
-      // Z: Ron
-      mahjong[2] |= 0x04;
-    } else if (data[i] == 0x1e) {
-      // 1: Start
-      mahjong[0] |= 0x02;
-    } else if (data[i] == 0x22) {
-      // 5: Coin
-      coin_key = true;
-    }
-  }
-  coin_sw[0] = (coin_sw[0] << 1) | (coin_key ? 1 : 0);
 }
 
 static void controller_reset_digital_map(uint8_t player) {
@@ -215,13 +160,7 @@ void controller_update(const uint8_t hub_index,
   }
 
   if (info->type == HID_TYPE_KEYBOARD) {
-    if (size == 8) {
-      mode = MODE_MAHJONG;
-      mahjong_update(data);
-    }
     return;
-  } else if (mode == MODE_MAHJONG) {
-    mode = MODE_NORMAL;
   }
 
   struct settings* settings = settings_get();
@@ -342,18 +281,7 @@ uint8_t controller_head(void) {
 }
 
 uint8_t controller_data(uint8_t player, uint8_t index, uint8_t gpout) {
-  if (mode == MODE_MAHJONG) {
-    uint8_t service = service_sw ? 0x40 : 0;
-    if (gpout == 0x40)
-      return mahjong[0] | service;
-    if (gpout == 0x20)
-      return mahjong[1] | service;
-    if (gpout == 0x10)
-      return mahjong[2] | service;
-    if (gpout == 0x80 || gpout == 0x08)
-      return mahjong[3] | service;
-    return service;
-  }
+  gpout;
   uint8_t line = (player << 1) + index;
   if (line >= 4) {
     return 0;
