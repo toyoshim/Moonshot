@@ -21,7 +21,7 @@
 #include "controller.h"
 #include "settings.h"
 
-#define PROTO1
+// #define PROTO1
 
 enum {
   MODE_NORMAL = 0,  // Normal 2 buttons, or Capcom 6 buttons mode
@@ -56,22 +56,33 @@ static volatile uint8_t nop = 0;  // used to avoid compiler optimization
 
 #define GPIO_COM P1_4
 
-#define SET_LOW_CYCLE_SIGNALS(v)      \
-  {                                   \
-    uint8_t adjusted_value = swap[v]; \
-    P4_OUT = adjusted_value;          \
-    P3 = 0x20 | adjusted_value;       \
+#define SET_LOW_CYCLE_SIGNALS(v)       \
+  {                                    \
+    uint8_t adjusted_value = swaph[v]; \
+    P4_OUT = adjusted_value;           \
+    P3 = 0x20 | adjusted_value;        \
+    P2 = 0x10 | swapl[v];              \
   }
-#define SET_HIGH_CYCLE_SIGNALS(v)     \
-  {                                   \
-    uint8_t adjusted_value = swap[v]; \
-    P4_OUT = adjusted_value;          \
-    P3 = 0x30 | adjusted_value;       \
+#define SET_HIGH_CYCLE_SIGNALS(v)      \
+  {                                    \
+    uint8_t adjusted_value = swaph[v]; \
+    P4_OUT = adjusted_value;           \
+    P3 = 0x30 | adjusted_value;        \
+    P2 = 0x30 | swapl[v];              \
   }
-#define SET_READY() P3_5 = 0
-#define RESET_READY() P3_5 = 1
+#define SET_READY() \
+  {                 \
+    P2_4 = 0;       \
+    P3_5 = 0;       \
+  }
 
-static uint8_t swap[16] = {
+#define RESET_READY() \
+  {                   \
+    P2_4 = 1;         \
+    P3_5 = 1;         \
+  }
+
+static uint8_t swaph[16] = {
     0x00,  // xxxx0000 => 00xxxx00
     0x80,  // xxxx0001 => 10xxxx00
     0x02,  // xxxx0010 => 00xxxx10
@@ -88,6 +99,24 @@ static uint8_t swap[16] = {
     0xc1,  // xxxx1101 => 11xxxx01
     0x43,  // xxxx1110 => 01xxxx11
     0xc3,  // xxxx1111 => 11xxxx11
+};
+static uint8_t swapl[16] = {
+    0x00,  // xxxx0000 => xxxx0000
+    0x02,  // xxxx0001 => xxxx0010
+    0x01,  // xxxx0010 => xxxx0001
+    0x03,  // xxxx0011 => xxxx0011
+    0x04,  // xxxx0100 => xxxx0100
+    0x06,  // xxxx0101 => xxxx0110
+    0x05,  // xxxx0110 => xxxx0101
+    0x07,  // xxxx0111 => xxxx0111
+    0x08,  // xxxx1000 => xxxx1000
+    0x0a,  // xxxx1001 => xxxx1010
+    0x09,  // xxxx1010 => xxxx1001
+    0x0b,  // xxxx1011 => xxxx1011
+    0x0c,  // xxxx1100 => xxxx1100
+    0x0e,  // xxxx1101 => xxxx1110
+    0x0d,  // xxxx1110 => xxxx1101
+    0x0f,  // xxxx1111 => xxxx1111
 };
 #endif
 
@@ -290,10 +319,10 @@ void atari_poll(void) {
     }
     P2 = out[0];
 #else
-    // P2_0: D  D
-    // P2_1: U  U
-    // P2_2: L  L
-    // P2_3: R  R
+    // P2_0: D  D      Bit 1
+    // P2_1: U  U      Bit 0
+    // P2_2: L  L      Bit 2
+    // P2_3: R  R      Bit 3
     // P2_4: B2 B2
     // P2_5: B1 B1
     // P3_4: B1 B3

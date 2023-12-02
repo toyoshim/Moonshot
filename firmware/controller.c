@@ -9,7 +9,7 @@
 
 #include "settings.h"
 
-static uint8_t digital[2];
+static uint16_t digital[2];
 static uint16_t analog[2][6];
 
 static uint16_t raw_digital[2];
