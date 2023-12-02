@@ -272,21 +272,22 @@ void atari_poll(void) {
     // P2_4: 1  3
     // P2_5: 2 Start
 
-    uint8_t buttons = controller_data(0, 0);
-    out[0] = ((buttons & 0x20) ? 0 : 0x01) | ((buttons & 0x10) ? 0 : 0x02) |
-             ((buttons & 0x08) ? 0 : 0x04) | ((buttons & 0x04) ? 0 : 0x08) |
-             ((buttons & 0x02) ? 0 : 0x10) | ((buttons & 0x01) ? 0 : 0x20);
-    out[1] = ((buttons & 0x40) ? 0 : 0x08) | ((buttons & 0x80) ? 0 : 0x20);
-    if (buttons & 0x40) {
+    uint16_t buttons = controller_digital(0);
+    uint8_t h = buttons >> 8;
+    uint8_t l = buttons;
+    out[0] = ((h & 0x20) ? 0 : 0x01) | ((h & 0x10) ? 0 : 0x02) |
+             ((h & 0x08) ? 0 : 0x04) | ((h & 0x04) ? 0 : 0x08) |
+             ((h & 0x02) ? 0 : 0x10) | ((h & 0x01) ? 0 : 0x20);
+    out[1] = ((h & 0x40) ? 0 : 0x08) | ((h & 0x80) ? 0 : 0x20) |
+             ((l & 0x10) ? 0 : 0x01) | ((l & 0x20) ? 0 : 0x02) |
+             ((l & 0x40) ? 0 : 0x04) | ((l & 0x80) ? 0 : 0x10);
+
+    if (h & 0x40) {
       out[0] &= 0xfc;  // SELECT == U + D
     }
-    if (buttons & 0x80) {
+    if (h & 0x80) {
       out[0] &= 0xf3;  // START == L + R
     }
-
-    buttons = controller_data(0, 1);
-    out[1] |= ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
-              ((buttons & 0x40) ? 0 : 0x04) | ((buttons & 0x80) ? 0 : 0x10);
     P2 = out[0];
 #else
     // P2_0: D  D
@@ -301,32 +302,35 @@ void atari_poll(void) {
     // P3_7: U  B6
     // P4_0: L  B4
     // P4_1: D  B5
-    uint8_t buttons = controller_data(0, 0);
-    out[0] = ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
-             ((buttons & 0x08) ? 0 : 0x04) | ((buttons & 0x04) ? 0 : 0x08) |
-             ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x02) ? 0 : 0x20);
-    out[1] = ((buttons & 0x40) ? 0 : 0x40) | ((buttons & 0x80) ? 0 : 0x20);
-    if (buttons & 0x40) {
+    uint16_t buttons = controller_digital(0);
+    uint8_t h = buttons >> 8;
+    uint8_t l = buttons;
+    out[0] = ((h & 0x10) ? 0 : 0x01) | ((h & 0x20) ? 0 : 0x02) |
+             ((h & 0x08) ? 0 : 0x04) | ((h & 0x04) ? 0 : 0x08) |
+             ((h & 0x01) ? 0 : 0x10) | ((h & 0x02) ? 0 : 0x20);
+    out[1] = ((h & 0x40) ? 0 : 0x40) | ((h & 0x80) ? 0 : 0x20) |
+             ((l & 0x40) ? 0 : 0x01) | ((l & 0x20) ? 0 : 0x02) |
+             ((l & 0x80) ? 0 : 0x10) | ((l & 0x10) ? 0 : 0x80);
+
+    if (h & 0x40) {
       out[0] &= 0xfc;  // SELECT == U + D
     }
-    if (buttons & 0x80) {
+    if (h & 0x80) {
       out[0] &= 0xf3;  // START == L + R
     }
 
-    buttons = controller_data(0, 1);
-    out[1] |= ((buttons & 0x40) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
-              ((buttons & 0x80) ? 0 : 0x10) | ((buttons & 0x10) ? 0 : 0x80);
     P2 = out[0];
     P3 = out[1];
     P4_OUT = out[1];
 #endif
   } else if (mode == MODE_CYBER) {
-    uint8_t d0 = ~controller_data(0, 0);
-    uint8_t d1 = ~controller_data(0, 1);
-    uint8_t a0 = controller_analog(0) >> 8;
-    uint8_t a1 = controller_analog(1) >> 8;
-    uint8_t a2 = controller_analog(2) >> 8;
-    uint8_t a3 = controller_analog(3) >> 8;
+    uint16_t d = ~controller_digital(0);
+    uint8_t d0 = d >> 8;
+    uint8_t d1 = d;
+    uint8_t a0 = controller_analog(0, 0) >> 8;
+    uint8_t a1 = controller_analog(0, 1) >> 8;
+    uint8_t a2 = controller_analog(0, 2) >> 8;
+    uint8_t a3 = controller_analog(0, 3) >> 8;
     //  A|A', B|B', C, D, E1, E2, START SELECT
     out[0] = ((d0 << 6) & ((d1 & 0x0c) << 4)) | ((d1 & 0xf0) >> 2) | (d0 >> 6);
     // Ch.0 high, Ch.1 high
@@ -354,25 +358,21 @@ void atari_poll(void) {
     // P3_7: U  U      B6
     // P4_0: L  L      B4
     // P4_1: D  D      B5
-    uint8_t buttons = controller_data(0, 0);
+    uint16_t buttons = controller_digital(0);
+    uint8_t h = buttons >> 8;
+    uint8_t l = buttons;
     // D | U | Start | B1
-    out[0] = ((buttons & 0x10) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
-             ((buttons & 0x80) ? 0 : 0x10) | ((buttons & 0x02) ? 0 : 0x20);
-    // L | D | B2 | R | U
-    uint8_t out1 =
-        ((buttons & 0x08) ? 0 : 0x01) | ((buttons & 0x10) ? 0 : 0x02) |
-        ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x04) ? 0 : 0x40) |
-        ((buttons & 0x20) ? 0 : 0x80);
-    // B2 | Select
-    uint8_t out2 =
-        ((buttons & 0x01) ? 0 : 0x10) | ((buttons & 0x40) ? 0 : 0x40);
-    buttons = controller_data(0, 1);
-    // | B3
-    out[1] = out1 | ((buttons & 0x80) ? 0 : 0x20);
-    // | B3 | B4 | B5 | B6
-    out[2] = out2 | ((buttons & 0x80) ? 0 : 0x20) |
-             ((buttons & 0x40) ? 0 : 0x01) | ((buttons & 0x20) ? 0 : 0x02) |
-             ((buttons & 0x10) ? 0 : 0x80);
+    out[0] = ((h & 0x10) ? 0 : 0x01) | ((h & 0x20) ? 0 : 0x02) |
+             ((h & 0x80) ? 0 : 0x10) | ((h & 0x02) ? 0 : 0x20);
+    // L | D | B2 | R | U | B3
+    out[1] = ((h & 0x08) ? 0 : 0x01) | ((h & 0x10) ? 0 : 0x02) |
+             ((h & 0x01) ? 0 : 0x10) | ((h & 0x04) ? 0 : 0x40) |
+             ((h & 0x20) ? 0 : 0x80) | ((l & 0x80) ? 0 : 0x20);
+
+    // B2 | Select | B3 | B4 | B5 | B6
+    out[2] = ((h & 0x01) ? 0 : 0x10) | ((h & 0x40) ? 0 : 0x40) |
+             ((l & 0x80) ? 0 : 0x20) | ((l & 0x40) ? 0 : 0x01) |
+             ((l & 0x20) ? 0 : 0x02) | ((l & 0x10) ? 0 : 0x80);
     P2 = out[0];
     P3 = out[1];
     P4_OUT = out[1];

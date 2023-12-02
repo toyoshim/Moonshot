@@ -10,13 +10,12 @@
 
 #include "hid.h"
 
-void controller_reset(void);
 void controller_update(const uint8_t hub,
                        const struct hid_info* info,
                        const uint8_t* data,
                        uint16_t size);
-uint8_t controller_data(uint8_t player, uint8_t index);
-uint16_t controller_analog(uint8_t index);
+uint16_t controller_digital(uint8_t player);
+uint16_t controller_analog(uint8_t player, uint8_t index);
 uint16_t controller_raw_digital(uint8_t player);
 uint16_t controller_raw_analog(uint8_t player, uint8_t index);
 

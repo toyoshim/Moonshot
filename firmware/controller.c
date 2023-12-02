@@ -9,8 +9,8 @@
 
 #include "settings.h"
 
-static uint8_t digital_map[3][4];
-static uint16_t analog[8];  // TODO: split to 2P
+static uint8_t digital[2];
+static uint16_t analog[2][6];
 
 static uint16_t raw_digital[2];
 static uint16_t raw_analog[2][6];
@@ -68,42 +68,12 @@ uint16_t analog_check(const struct hid_info* info,
   return 0x8000;
 }
 
-static void reset_digital_map(uint8_t player) {
-  for (uint8_t i = 0; i < 4; ++i) {
-    digital_map[player][i] = 0;
-  }
-}
-
-static void merge_digital_map() {
-  for (uint8_t i = 0; i < 4; ++i) {
-    digital_map[2][i] = digital_map[0][i] | digital_map[1][i];
-  }
-}
-
-static void update_digital_map(uint8_t* dst, uint16_t src, bool on) {
-  if (!on) {
-    return;
-  }
-  dst[0] |= src >> 8;
-  dst[1] |= src;
-}
-
-static void reset_raw_data(uint8_t player) {
+static void reset_data(uint8_t player) {
+  digital[player] = 0;
   raw_digital[player] = 0;
   for (uint8_t i = 0; i < 6; ++i) {
+    analog[player][i] = 0;
     raw_analog[player][i] = 0;
-  }
-}
-
-void controller_reset(void) {
-  for (uint8_t p = 0; p < 3; ++p) {
-    reset_digital_map(p);
-  }
-  for (uint8_t i = 0; i < 8; ++i) {
-    analog[i] = 0;
-  }
-  for (uint8_t p = 0; p < 2; ++p) {
-    reset_raw_data(p);
   }
 }
 
@@ -118,11 +88,10 @@ void controller_update(const uint8_t hub,
     data++;
     size--;
   }
-  reset_digital_map(hub);
+  digital[hub] = 0;
 
   if (info->state != HID_STATE_READY) {
-    merge_digital_map();
-    reset_raw_data(hub);
+    reset_data(hub);
     return;
   }
 
@@ -170,8 +139,8 @@ void controller_update(const uint8_t hub,
       (u ? 0x8000 : 0) | (d ? 0x4000 : 0) | (l ? 0x2000 : 0) | (r ? 0x1000 : 0);
 
   struct settings* settings = settings_get();
-  uint8_t alt_digital = 0;
-  for (uint8_t i = 0; i < 6; ++i) {
+  uint8_t i;
+  for (i = 0; i < 6; ++i) {
     uint16_t value = analog_check(info, data, i);
     raw_analog[hub][i] = value;
     if (i == 0) {
@@ -183,51 +152,49 @@ void controller_update(const uint8_t hub,
     }
     uint8_t index = settings->map[hub].analog[i].map;
     if (index != 0xff) {
-      analog[index] = value;
+      analog[hub][index] = value;
     }
   }
 
-  update_digital_map(digital_map[hub], settings->map[hub].digital[0].map, u);
-  update_digital_map(digital_map[hub], settings->map[hub].digital[1].map, d);
-  update_digital_map(digital_map[hub], settings->map[hub].digital[2].map, l);
-  update_digital_map(digital_map[hub], settings->map[hub].digital[3].map, r);
-  for (uint8_t i = 0; i < 12; ++i) {
+  uint16_t digital_map = 0;
+  if (u) {
+    digital_map |= settings->map[hub].digital[0].map;
+  }
+  if (d) {
+    digital_map |= settings->map[hub].digital[1].map;
+  }
+  if (l) {
+    digital_map |= settings->map[hub].digital[2].map;
+  }
+  if (r) {
+    digital_map |= settings->map[hub].digital[3].map;
+  }
+
+  for (i = 0; i < 12; ++i) {
     bool on = button_check(info->button[i], data);
     raw_data |= on ? (1 << (11 - i)) : 0;
-    uint8_t rapid_fire = settings->map[hub].digital[i].rapid_fire;
-    update_digital_map(digital_map[hub], settings->map[hub].digital[4 + i].map,
-                       (settings->sequence[rapid_fire].on && on) ^
-                           settings->sequence[rapid_fire].invert);
+    uint8_t rapid_fire = settings->map[hub].digital[4 + i].rapid_fire;
+    if ((settings->sequence[rapid_fire].on && on) ^
+        settings->sequence[rapid_fire].invert) {
+      digital_map |= settings->map[hub].digital[4 + i].map;
+    }
   }
+  digital[hub] = digital_map;
   raw_digital[hub] = raw_data;
-  merge_digital_map();
 }
 
-uint8_t controller_data(uint8_t player, uint8_t index) {
-  uint8_t line = (player << 1) + index;
-  if (line >= 4) {
-    return 0;
-  }
-  return digital_map[2][line];
+uint16_t controller_digital(uint8_t player) {
+  return digital[player];
 }
 
-uint16_t controller_analog(uint8_t index) {
-  if (index < 8) {
-    return analog[index];
-  }
-  return 0x8000;
+uint16_t controller_analog(uint8_t player, uint8_t index) {
+  return analog[player][index];
 }
 
 uint16_t controller_raw_digital(uint8_t player) {
-  if (player < 2) {
-    return raw_digital[player];
-  }
-  return 0;
+  return raw_digital[player];
 }
 
 uint16_t controller_raw_analog(uint8_t player, uint8_t index) {
-  if (player < 2 && index < 6) {
-    return raw_analog[player][index];
-  }
-  return 0;
+  return raw_analog[player][index];
 }
