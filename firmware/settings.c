@@ -67,7 +67,7 @@ static void load_rapid_fire_preset(void) {
   static const uint8_t masks[] = {0x01, 0x03, 0x07, 0x0f,
                                   0x1f, 0x3f, 0x7f, 0xff};
 
-  for (uint8_t i = 1; i < 8; ++i) {
+  for (uint8_t i = 0; i < 8; ++i) {
     settings.sequence[i].pattern = patterns[i];
     settings.sequence[i].bit = 1;
     settings.sequence[i].mask = masks[i];
