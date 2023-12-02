@@ -199,7 +199,7 @@ static void gpio_int(void) {
     }
     if ((command >> 8) == 0x0a) {
       uint8_t data = command;
-      while (data != 0xff) {
+      while (command_in_transaction() || data != 0xff) {
         uint8_t result[4];
         command_execute(data, result);
         for (n = 0; n < 4; ++n) {

@@ -170,9 +170,13 @@ void command_execute(uint8_t command, uint8_t* result) {
         result[0] = command;
         result[1] = 0xff;
         result[2] = 0xff;
-        result[3] = 0xff;  // Invalid SUM
+        result[3] = 0xe0;  // Invalid SUM
         return;
     }
   }
   result[3] = command ^ result[0] ^ result[1] ^ result[2];
+}
+
+bool command_in_transaction(void) {
+  return transaction_command != 0;
 }
