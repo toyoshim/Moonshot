@@ -2,8 +2,8 @@ CFLAGS = -V -mmcs51 --model-large --xram-size 0x1800 --xram-loc 0x0000 \
 	--code-size 0xec00 --stack-auto --Werror -Ichlib/src --opt-code-speed
 CC     = sdcc
 TARGET = moonshot
-OBJS  = main.rel atari.rel controller.rel settings.rel ch559.rel flash.rel \
-  gpio.rel grove.rel hid.rel hid_dualshock3.rel hid_guncon3.rel \
+OBJS  = main.rel atari.rel command.rel controller.rel settings.rel ch559.rel \
+  flash.rel gpio.rel grove.rel hid.rel hid_dualshock3.rel hid_guncon3.rel \
 	hid_keyboard.rel hid_mouse.rel hid_switch.rel hid_xbox.rel i2c.rel led.rel \
 	serial.rel timer3.rel uart1.rel usb_host.rel
 DEFINES	= \
