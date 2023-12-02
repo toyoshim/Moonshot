@@ -61,6 +61,21 @@ static bool load_ionc_config(void) {
   return true;
 }
 
+static void load_rapid_fire_preset(void) {
+  static const uint8_t patterns[] = {0x01, 0x01, 0x01, 0x03,
+                                     0x03, 0x07, 0x07, 0x0f};
+  static const uint8_t masks[] = {0x01, 0x03, 0x07, 0x0f,
+                                  0x1f, 0x3f, 0x7f, 0xff};
+
+  for (uint8_t i = 1; i < 8; ++i) {
+    settings.sequence[i].pattern = patterns[i];
+    settings.sequence[i].bit = 1;
+    settings.sequence[i].mask = masks[i];
+    settings.sequence[i].invert = false;
+    settings.sequence[i].on = true;
+  }
+}
+
 static bool load_ms68_config(void) {
   // TODO: support default mode
   struct settings_ms68 ms68;
@@ -69,19 +84,7 @@ static bool load_ms68_config(void) {
   }
   settings_deserialize(&ms68, 0);
 
-  // Rapid fire presets
-  static const uint8_t patterns[] = {0x01, 0x01, 0x01, 0x03,
-                                     0x03, 0x07, 0x07, 0x0f};
-  static const uint8_t masks[] = {0x01, 0x03, 0x07, 0x0f,
-                                  0x1f, 0x3f, 0x7f, 0xff};
-  for (uint8_t i = 1; i < 8; ++i) {
-    settings.sequence[0].pattern = patterns[i];
-    settings.sequence[0].bit = 1;
-    settings.sequence[0].mask = masks[i];
-    settings.sequence[0].invert = false;
-    settings.sequence[0].on = true;
-  }
-
+  load_rapid_fire_preset();
   return true;
 }
 
@@ -140,6 +143,13 @@ void settings_deserialize(const struct settings_ms68* ms68, uint8_t player) {
 }
 
 bool settings_save(void) {
+  uint8_t magic[4];
+  if (!flash_read(0, magic, 4) || *(uint32_t*)magic != *(uint32_t*)"MS68") {
+    if (!flash_init(*((uint32_t*)"MS68"), true)) {
+      return false;
+    }
+    load_rapid_fire_preset();
+  }
   settings_serialize((struct settings_ms68*)&flash[4], 0);
   settings_serialize(
       (struct settings_ms68*)&flash[4 + sizeof(struct settings_ms68)], 1);
