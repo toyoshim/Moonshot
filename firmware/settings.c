@@ -4,18 +4,18 @@
 
 #include "settings.h"
 
+#include "flash.h"
 #include "gpio.h"
 #include "io.h"
 #include "timer3.h"
 
-#include "controller.h"
-
-static __code uint8_t* flash = (__code uint8_t*)0xf000;
-
 static struct settings settings;
-static uint16_t poll_msec = 0;
 
-static void apply(void) {
+static bool apply(void) {
+  uint8_t flash[169];
+  if (!flash_read(10, flash, 169)) {
+    return false;
+  }
   uint16_t offset = 10;
   const uint8_t core0 = flash[offset++];
   const uint8_t core1 = flash[offset++];
@@ -55,23 +55,21 @@ static void apply(void) {
     settings.sequence[i].invert = flash[offset++] & 0x80;
     settings.sequence[i].on = true;
   }
-
-  controller_reset();
+  return true;
 }
 
 void settings_init(void) {
   led_init(1, 5, LOW);
-
-  if (flash[0] != 'I' || flash[1] != 'O' || flash[2] != 'N' ||
-      flash[3] != 'C' || flash[4] != 1) {
-    led_mode(L_BLINK_THREE_TIMES);
-    for (;;) {
-      led_poll();
+  if (flash_init(*((uint32_t*)"IONC"), false)) {
+    if (apply()) {
+      settings_led_mode(L_ON);
+      return;
     }
   }
-  apply();
-
-  settings_led_mode(L_ON);
+  led_mode(L_BLINK_THREE_TIMES);
+  for (;;) {
+    led_poll();
+  }
 }
 
 void settings_poll(void) {
