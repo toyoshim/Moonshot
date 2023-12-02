@@ -14,6 +14,9 @@ enum {
   GET_RAW_ANALOG_1_3 = 0x02,
   GET_RAW_ANALOG_4_6 = 0x03,
 
+  INV_TRANSFER_TO_HOST = 0x0a,
+  INV_TRANSFER_TO_DEVICE = 0x0b,
+
   STORE_OPERATING_PLAYER = 0x10,
   STORE_LAYOUT_SETTINGS = 0x11,
   LOAD_LAYOUT_SETTINGS = 0x12,
@@ -36,6 +39,7 @@ static uint8_t check_xor = 0;
 
 static uint8_t transfer(void) {
   if (length == 0) {
+    transaction_command = 0;
     return check_xor;
   }
   uint8_t data = scratch_memory[address++ & 0xff];
@@ -49,33 +53,36 @@ static bool run_transaction(uint8_t data, uint8_t* result) {
   switch (transaction_command) {
     case SET_TRANSFER_SPACE:
       space = data;
+      transaction_command = 0;
       break;
     case SET_TRANSFER_ADDRESS:
       address = (address & 0xff00) | data;
+      transaction_command = 0;
       break;
     case SET_TRANSFER_HIGH_ADDRESS:
       address = (address & 0x00ff) | ((uint16_t)data << 8);
+      transaction_command = 0;
       break;
     case SET_TRANSFER_LENGTH:
       length = data;
+      transaction_command = 0;
       break;
     case TRANSFER_TO_DEVICE:
-      if (data != (uint8_t)~TRANSFER_TO_DEVICE) {
+      if (data != INV_TRANSFER_TO_DEVICE) {
         success = false;
         break;
       }
-      transaction_command = (uint8_t)~TRANSFER_TO_DEVICE;
+      transaction_command = INV_TRANSFER_TO_DEVICE;
       break;
-    case (uint8_t)~TRANSFER_TO_DEVICE:
-      if (length == 0) {
-        success = false;
-        break;
-      }
+    case INV_TRANSFER_TO_DEVICE:
       scratch_memory[address++ & 0xff] = data;
       --length;
+      if (length == 0) {
+        transaction_command = 0;
+      }
       break;
     case TRANSFER_TO_HOST:
-      if (data != (uint8_t)~TRANSFER_TO_HOST) {
+      if (data != INV_TRANSFER_TO_HOST) {
         success = false;
         break;
       }
@@ -94,12 +101,12 @@ static bool run_transaction(uint8_t data, uint8_t* result) {
     result[2] = data;
     result[3] = data;
   } else {
-    result[0] = 0;
-    result[1] = 0;
-    result[2] = 0;
-    result[3] = 0;
+    result[0] = data;
+    result[1] = data;
+    result[2] = data;
+    result[3] = 0xe0;
+    transaction_command = 0;
   }
-  transaction_command = 0;
   return true;
 }
 
