@@ -80,13 +80,12 @@ static void merge_digital_map() {
   }
 }
 
-static void update_digital_map(uint8_t* dst, uint8_t* src, bool on) {
+static void update_digital_map(uint8_t* dst, uint16_t src, bool on) {
   if (!on) {
     return;
   }
-  for (uint8_t i = 0; i < 4; ++i) {
-    dst[i] |= src[i];
-  }
+  dst[0] |= src >> 8;
+  dst[1] |= src;
 }
 
 static void reset_raw_data(uint8_t player) {
@@ -182,21 +181,21 @@ void controller_update(const uint8_t hub,
       u |= value < 0x6000;
       d |= value > 0xa000;
     }
-    uint8_t index = settings->analog_index[hub][i];
+    uint8_t index = settings->map[hub].analog[i].map;
     if (index != 0xff) {
       analog[index] = value;
     }
   }
 
-  update_digital_map(digital_map[hub], settings->digital_map[hub][0].data, u);
-  update_digital_map(digital_map[hub], settings->digital_map[hub][1].data, d);
-  update_digital_map(digital_map[hub], settings->digital_map[hub][2].data, l);
-  update_digital_map(digital_map[hub], settings->digital_map[hub][3].data, r);
+  update_digital_map(digital_map[hub], settings->map[hub].digital[0].map, u);
+  update_digital_map(digital_map[hub], settings->map[hub].digital[1].map, d);
+  update_digital_map(digital_map[hub], settings->map[hub].digital[2].map, l);
+  update_digital_map(digital_map[hub], settings->map[hub].digital[3].map, r);
   for (uint8_t i = 0; i < 12; ++i) {
     bool on = button_check(info->button[i], data);
     raw_data |= on ? (1 << (11 - i)) : 0;
-    uint8_t rapid_fire = settings->rapid_fire[hub][i];
-    update_digital_map(digital_map[hub], settings->digital_map[hub][4 + i].data,
+    uint8_t rapid_fire = settings->map[hub].digital[i].rapid_fire;
+    update_digital_map(digital_map[hub], settings->map[hub].digital[4 + i].map,
                        (settings->sequence[rapid_fire].on && on) ^
                            settings->sequence[rapid_fire].invert);
   }

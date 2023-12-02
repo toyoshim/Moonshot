@@ -431,12 +431,10 @@ void atari_poll(void) {
     }
     switch (mode) {
       case MODE_NORMAL:
-        settings_select(0);
         settings_led_mode(L_ON);
         grove_update_interrupt(0);
         break;
       case MODE_CYBER:
-        settings_select(1);
         settings_led_mode(L_BLINK);
         SET_LOW_CYCLE_SIGNALS(0x0f);
         RESET_READY();
@@ -449,7 +447,6 @@ void atari_poll(void) {
         break;
       case MODE_MD:
         // PROTO1 doesn't enter this code path.
-        settings_select(0);
         settings_led_mode(L_BLINK_TWICE);
         grove_update_interrupt(bIE_P5_7_HI);
         break;
