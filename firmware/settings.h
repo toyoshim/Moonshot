@@ -42,7 +42,7 @@ bool settings_init(void);
 struct settings* settings_get(void);
 void settings_rapid_sync(void);
 void settings_serialize(struct settings_ms68* ms68, uint8_t player);
-void settings_deserialize(struct settings_ms68* ms68, uint8_t player);
+void settings_deserialize(const struct settings_ms68* ms68, uint8_t player);
 bool settings_save(void);
 
 #endif  // __settings_h__

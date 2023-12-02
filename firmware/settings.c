@@ -127,7 +127,7 @@ void settings_serialize(struct settings_ms68* ms68, uint8_t player) {
   }
 }
 
-void settings_deserialize(struct settings_ms68* ms68, uint8_t player) {
+void settings_deserialize(const struct settings_ms68* ms68, uint8_t player) {
   for (uint8_t i = 0; i < 16; ++i) {
     settings.map[player].digital[i].map =
         (ms68->digital[i].map1 << 8) | ms68->digital[i].map2;
