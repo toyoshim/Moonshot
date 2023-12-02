@@ -422,7 +422,7 @@ void atari_poll(void) {
   frame_timer = timer3_tick_msec();
   settings_rapid_sync();
 
-  bool current_button_pressed = P4_6 == LOW;
+  bool current_button_pressed = digitalRead(4, 6) == LOW;
   if (button_pressed & !current_button_pressed) {
     if (mode == MODE_LAST) {
       mode = MODE_NORMAL;
@@ -431,11 +431,11 @@ void atari_poll(void) {
     }
     switch (mode) {
       case MODE_NORMAL:
-        settings_led_mode(L_ON);
+        led_mode(L_ON);
         grove_update_interrupt(0);
         break;
       case MODE_CYBER:
-        settings_led_mode(L_BLINK);
+        led_mode(L_BLINK);
         SET_LOW_CYCLE_SIGNALS(0x0f);
         RESET_READY();
 #ifdef PROTO1
@@ -447,7 +447,7 @@ void atari_poll(void) {
         break;
       case MODE_MD:
         // PROTO1 doesn't enter this code path.
-        settings_led_mode(L_BLINK_TWICE);
+        led_mode(L_BLINK_TWICE);
         grove_update_interrupt(bIE_P5_7_HI);
         break;
     }

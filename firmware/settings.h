@@ -8,8 +8,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "led.h"
-
 struct settings {
   struct {
     struct {
@@ -30,10 +28,8 @@ struct settings {
   } sequence[8];
 };
 
-void settings_init(void);
-void settings_poll(void);
+bool settings_init(void);
 struct settings* settings_get(void);
-void settings_led_mode(uint8_t mode);
 void settings_rapid_sync(void);
 
 #endif  // __settings_h__

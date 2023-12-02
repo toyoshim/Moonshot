@@ -5,9 +5,7 @@
 #include "settings.h"
 
 #include "flash.h"
-#include "gpio.h"
-#include "io.h"
-#include "timer3.h"
+#include "serial.h"
 
 static struct settings settings;
 
@@ -58,30 +56,19 @@ static bool apply(void) {
   return true;
 }
 
-void settings_init(void) {
-  led_init(1, 5, LOW);
+bool settings_init(void) {
   if (flash_init(*((uint32_t*)"IONC"), false)) {
-    if (apply()) {
-      settings_led_mode(L_ON);
-      return;
+    if (!apply()) {
+      return false;
     }
+  } else {
+    return false;
   }
-  led_mode(L_BLINK_THREE_TIMES);
-  for (;;) {
-    led_poll();
-  }
-}
-
-void settings_poll(void) {
-  led_poll();
+  return true;
 }
 
 struct settings* settings_get(void) {
   return &settings;
-}
-
-void settings_led_mode(uint8_t mode) {
-  led_mode(mode);
 }
 
 void settings_rapid_sync(void) {

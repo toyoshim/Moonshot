@@ -3,7 +3,9 @@
 // in the LICENSE file.
 
 #include "ch559.h"
+#include "gpio.h"
 #include "hid.h"
+#include "led.h"
 #include "serial.h"
 
 #include "atari.h"
@@ -26,9 +28,17 @@ static uint8_t get_flags(void) {
 void main(void) {
   initialize();
 
-  settings_init();
+  led_init(1, 5, LOW);
+  Serial.printf("MP17-Moonshot ver " VERSION_STRING);
+
+  if (!settings_init()) {
+    led_mode(L_BLINK_THREE_TIMES);
+    for (;;) {
+      led_poll();
+    }
+  }
+  led_mode(L_ON);
   settings = settings_get();
-  settings_led_mode(L_ON);
 
   atari_init();
 
@@ -38,11 +48,9 @@ void main(void) {
   hid.get_flags = get_flags;
   hid_init(&hid);
 
-  Serial.printf("MP17-Moonshot ver " VERSION_STRING);
-
   for (;;) {
     hid_poll();
-    settings_poll();
+    led_poll();
     atari_poll();
 
 #ifdef _DBG
@@ -55,8 +63,8 @@ void main(void) {
         Serial.printf("\n");
         init = true;
       }
-      for (uint8_t i = 0; i < 3; ++i) {
-        uint8_t v = (i == 0) ? controller_head() : controller_data(0, i - 1, 0);
+      for (uint8_t i = 0; i < 2; ++i) {
+        uint8_t v = controller_data(0, i);
         for (uint8_t b = 0x80; b != 0; b >>= 1) {
           Serial.printf("%d  ", (v & b) ? 1 : 0);
         }
