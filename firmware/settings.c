@@ -9,15 +9,13 @@
 
 static struct settings settings;
 
-static bool apply(void) {
+static bool load_ionc_config(void) {
   uint8_t flash[169];
   if (!flash_read(10, flash, 169)) {
     return false;
   }
-  uint16_t offset = 10;
-  const uint8_t core0 = flash[offset++];
-  const uint8_t core1 = flash[offset++];
-  const uint8_t core2 = flash[offset++];
+  uint16_t offset = 3;  // Skip core settings
+  // Analiog map
   for (uint8_t p = 0; p < 2; ++p) {
     for (uint8_t i = 0; i < 6; ++i) {
       const uint8_t data = flash[offset++];
@@ -27,20 +25,26 @@ static bool apply(void) {
     }
   }
 
+  // Digital map
   for (uint8_t p = 0; p < 2; ++p) {
     for (uint8_t i = 0; i < 16; ++i) {
-      settings.map[p].digital[i].map = (flash[offset++] << 8) | flash[offset++];
+      uint16_t map = (flash[offset++] << 8) | flash[offset++];
+      settings.map[p].digital[i].map = map;
+      // Skip cross-player map
       offset += 2;
     }
   }
 
+  // Rapid fire settings
   for (uint8_t p = 0; p < 2; ++p) {
-    for (uint8_t i = 0; i < 6; ++i) {
-      const uint8_t data = flash[offset++];
+    for (uint8_t i = 0; i < 8; ++i) {
+      const uint8_t data = (i < 2) ? 0 : flash[offset++];
       settings.map[p].digital[i * 2 + 0].rapid_fire = (data >> 4) & 7;
       settings.map[p].digital[i * 2 + 1].rapid_fire = data & 7;
     }
   }
+
+  // Rapid fire patterns.
   settings.sequence[0].pattern = 0xff;
   settings.sequence[0].bit = 1;
   settings.sequence[0].mask = 0xff;
@@ -53,12 +57,41 @@ static bool apply(void) {
     settings.sequence[i].invert = flash[offset++] & 0x80;
     settings.sequence[i].on = true;
   }
+
+  return true;
+}
+
+static bool load_ms68_config(void) {
+  // TODO: support default mode
+  struct settings_ms68 ms68;
+  if (!flash_read(8, (uint8_t*)&ms68, sizeof(struct settings_ms68))) {
+    return false;
+  }
+  settings_deserialize(&ms68, 0);
+
+  // Rapid fire presets
+  static const uint8_t patterns[] = {0x01, 0x01, 0x01, 0x03,
+                                     0x03, 0x07, 0x07, 0x0f};
+  static const uint8_t masks[] = {0x01, 0x03, 0x07, 0x0f,
+                                  0x1f, 0x3f, 0x7f, 0xff};
+  for (uint8_t i = 1; i < 8; ++i) {
+    settings.sequence[0].pattern = patterns[i];
+    settings.sequence[0].bit = 1;
+    settings.sequence[0].mask = masks[i];
+    settings.sequence[0].invert = false;
+    settings.sequence[0].on = true;
+  }
+
   return true;
 }
 
 bool settings_init(void) {
   if (flash_init(*((uint32_t*)"IONC"), false)) {
-    if (!apply()) {
+    if (!load_ionc_config()) {
+      return false;
+    }
+  } else if (flash_init(*((uint32_t*)"MS68"), false)) {
+    if (!load_ms68_config()) {
       return false;
     }
   } else {
@@ -80,4 +113,40 @@ void settings_rapid_sync(void) {
     settings.sequence[i].on =
         settings.sequence[i].pattern & settings.sequence[i].bit;
   }
+}
+
+void settings_serialize(struct settings_ms68* ms68, uint8_t player) {
+  for (uint8_t i = 0; i < 16; ++i) {
+    ms68->digital[i].map1 = settings.map[player].digital[i].map >> 8;
+    ms68->digital[i].map2 = settings.map[player].digital[i].map;
+    ms68->digital[i].rapid_fire = settings.map[player].digital[i].rapid_fire;
+    ms68->digital[i].padding = 0;
+  }
+  for (uint8_t i = 0; i < 6; ++i) {
+    ms68->analog[i] = settings.map[player].analog[i].map;
+  }
+}
+
+void settings_deserialize(struct settings_ms68* ms68, uint8_t player) {
+  for (uint8_t i = 0; i < 16; ++i) {
+    settings.map[player].digital[i].map =
+        (ms68->digital[i].map1 << 8) | ms68->digital[i].map2;
+    settings.map[player].digital[i].rapid_fire = ms68->digital[i].rapid_fire;
+  }
+  for (uint8_t i = 0; i < 6; ++i) {
+    settings.map[player].analog[i].map = ms68->analog[i];
+    settings.map[player].analog[i].polarity = false;
+  }
+}
+
+bool settings_save(void) {
+  uint8_t flash[4 + sizeof(struct settings_ms68) * 2];
+  settings_serialize((struct settings_ms68*)&flash[8], 0);
+  settings_serialize(
+      (struct settings_ms68*)&flash[8 + sizeof(struct settings_ms68)], 1);
+  flash[0] = 1;  // version
+  flash[1] = 0;  // mode
+  flash[2] = 0;  // padding
+  flash[3] = 0;  // padding
+  return flash_write(4, flash, 4 + sizeof(struct settings_ms68) * 2);
 }
