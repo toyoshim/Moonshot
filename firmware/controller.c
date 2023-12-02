@@ -173,34 +173,18 @@ void controller_update(const uint8_t hub,
   struct settings* settings = settings_get();
   uint8_t alt_digital = 0;
   for (uint8_t i = 0; i < 6; ++i) {
-    uint8_t type = settings->analog_type[hub][i];
-    uint8_t index = settings->analog_index[hub][i];
     uint16_t value = analog_check(info, data, i);
     raw_analog[hub][i] = value;
-    switch (type) {
-      case AT_NONE:
-        break;
-      case AT_DIGITAL:
-        switch (index) {
-          case 0:
-            l |= value < 0x6000;
-            r |= value > 0xa000;
-            break;
-          case 1:
-            u |= value < 0x6000;
-            d |= value > 0xa000;
-            break;
-          case 2:
-            alt_digital |= (value < 0x6000) ? 4 : (value > 0xa000) ? 8 : 0;
-            break;
-          case 3:
-            alt_digital |= (value < 0x6000) ? 1 : (value > 0xa000) ? 2 : 0;
-            break;
-        }
-        break;
-      case AT_ANALOG:
-        analog[index] = value;
-        break;
+    if (i == 0) {
+      l |= value < 0x6000;
+      r |= value > 0xa000;
+    } else if (i == 1) {
+      u |= value < 0x6000;
+      d |= value > 0xa000;
+    }
+    uint8_t index = settings->analog_index[hub][i];
+    if (index != 0xff) {
+      analog[index] = value;
     }
   }
 
@@ -208,17 +192,6 @@ void controller_update(const uint8_t hub,
   update_digital_map(digital_map[hub], settings->digital_map[hub][1].data, d);
   update_digital_map(digital_map[hub], settings->digital_map[hub][2].data, l);
   update_digital_map(digital_map[hub], settings->digital_map[hub][3].data, r);
-  if (alt_digital) {
-    uint8_t alt_hub = (hub + 1) & 1;
-    update_digital_map(digital_map[hub], settings->digital_map[alt_hub][0].data,
-                       alt_digital & 1);
-    update_digital_map(digital_map[hub], settings->digital_map[alt_hub][1].data,
-                       alt_digital & 2);
-    update_digital_map(digital_map[hub], settings->digital_map[alt_hub][2].data,
-                       alt_digital & 4);
-    update_digital_map(digital_map[hub], settings->digital_map[alt_hub][3].data,
-                       alt_digital & 8);
-  }
   for (uint8_t i = 0; i < 12; ++i) {
     bool on = button_check(info->button[i], data);
     raw_data |= on ? (1 << (11 - i)) : 0;

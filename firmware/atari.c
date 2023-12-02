@@ -261,6 +261,7 @@ static void gpio_int(void) {
 }
 
 void atari_init(void) {
+  pinMode(4, 6, INPUT_PULLUP);
   for (uint8_t bit = 0; bit < 6; ++bit) {
     pinMode(2, bit, OUTPUT);
     digitalWrite(2, bit, HIGH);
@@ -421,7 +422,7 @@ void atari_poll(void) {
   frame_timer = timer3_tick_msec();
   settings_rapid_sync();
 
-  bool current_button_pressed = settings_service_pressed();
+  bool current_button_pressed = P4_6 == LOW;
   if (button_pressed & !current_button_pressed) {
     if (mode == MODE_LAST) {
       mode = MODE_NORMAL;
