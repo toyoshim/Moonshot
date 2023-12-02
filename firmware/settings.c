@@ -8,9 +8,9 @@
 #include "serial.h"
 
 static struct settings settings;
+static uint8_t flash[169];
 
 static bool load_ionc_config(void) {
-  uint8_t flash[169];
   if (!flash_read(10, flash, 169)) {
     return false;
   }
@@ -140,10 +140,9 @@ void settings_deserialize(const struct settings_ms68* ms68, uint8_t player) {
 }
 
 bool settings_save(void) {
-  uint8_t flash[4 + sizeof(struct settings_ms68) * 2];
-  settings_serialize((struct settings_ms68*)&flash[8], 0);
+  settings_serialize((struct settings_ms68*)&flash[4], 0);
   settings_serialize(
-      (struct settings_ms68*)&flash[8 + sizeof(struct settings_ms68)], 1);
+      (struct settings_ms68*)&flash[4 + sizeof(struct settings_ms68)], 1);
   flash[0] = 1;  // version
   flash[1] = 0;  // mode
   flash[2] = 0;  // padding
