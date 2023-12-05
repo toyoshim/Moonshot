@@ -1,0 +1,124 @@
+_8255ADDR	equ	$e9a001
+_A		equ	0
+_CONTROL	equ	6
+
+_REQ_L		equ	$08
+_REQ_H		equ	$09
+
+_LH		equ	5
+_ACK		equ	6
+
+_CS_TIMEOUT	equ	800
+_MS_TIMEOUT	equ	80000		* some commands take a long time to complete
+
+	.xdef	_ms_comm
+
+*--------------------------------------------------------------------------------------------*
+* int ms_comm(int len, char* cmd, char* res);
+*   len  8(a6): command length
+*   cmd 12(a6): pointer for command buffer that size is `len`
+*   res 16(a6): pointer for response buffer that size is 6 + `len` * 4
+*   communicate with Moonshot over the extended cyberstick protocol
+*--------------------------------------------------------------------------------------------*
+	.text
+_ms_comm
+	link	a6, #0
+	move.w	sr, -(sp)
+	movem.l	d1-d5/a0-a2, -(sp)
+
+	or.w	#$0700, sr		* - interrupt off
+
+	movea.l	#_8255ADDR, a0		* a0: 8255 address
+	move.b	#_REQ_H, _CONTROL(a0)
+	move.b	#_REQ_L, _CONTROL(a0)
+	move.b	#_REQ_L, _CONTROL(a0)	* write twice to wait a little via its bus wait
+
+	move.l	8(a6), d1		* d1: len
+	move.l	12(a6), a1		* a1: &tx
+	move.l	16(a6), a2		* a2: &rx
+
+	clr.l	d0
+	cmp.b	#0, d1
+	bne	1f
+	move.w	#$0fff, d0		* d0: Cyberstick protocol
+	bra	2f
+1:
+	move.w	#$a00, d0		* d0: Moonshot extended protocol mark
+	move.b	(a1)+, d0		* d0: |command
+2:
+	lsl.w	#4, d0			* d0: <<= 4
+	move.l	#_CS_TIMEOUT, d2	* d2: timeout
+	move.w	#5, d5			* d5: repeat cycle; 5 + 1 times * 2 (low and high)
+
+__do_transaction:
+	lsl.w	#1, d0
+	bcc	1f
+	move.b	#_REQ_H, _CONTROL(a0)
+	bra	2f
+1:
+	move.b	#_REQ_L, _CONTROL(a0)
+2:
+	btst	#_LH, _A(a0)		* - wait for low cycle
+	dbeq	d2, 2b
+	bne	__timeout
+1:
+	btst	#_ACK, _A(a0)		* - wait for ready signal
+	dbeq	d2, 1b
+	bne	__timeout
+
+	move.b	_A(a0), d3		* d3: read data high
+	lsl.b	#4, d3
+	and.b	#$f0, d3
+
+	lsl.w	#1, d0
+	bcc	1f
+	move.b	#_REQ_H, _CONTROL(a0)
+	bra	2f
+1:
+	move.b	#_REQ_L, _CONTROL(a0)
+2:
+	btst	#_LH, _A(a0)		* - wait for high cycle
+	dbne	d2, 2b
+	beq	__timeout
+1:
+	btst	#_ACK, _A(a0)		* - wait for ready signal
+	dbeq	d2, 1b
+	bne	__timeout
+
+	move.b	_A(a0), d4		* d4: read data
+	and.b	#$0f, d4
+	or.b	d3, d4
+	move.b	d4, (a2)+		* - store
+
+	dbra	d5, __do_transaction	* - repeat
+
+	cmp.b	#0, d1			* - remaining response check
+	beq	__success		* - no more response
+
+	subq.b	#1, d1
+	cmp.b	#0, d1
+	bne	1f
+	move.b	#$ff, d0		* - no more, push the terminal command
+	bra	2f
+1:
+	move.b	(a1)+, d0		* - pick up the next command
+2:
+	lsl.w	#8, d0
+	move.l	#_MS_TIMEOUT, d2
+	move.w	#3, d5
+	bra	__do_transaction	* - retry 4 * 2 cycles with the next command
+
+__success:
+	clr.l	d0			* - success
+__return:
+	move.b	#_REQ_H, _CONTROL(a0)
+
+	movem.l	(sp)+, d1-d5/a0-a2
+	move.w	(sp)+, sr		* - interrupt on
+	unlk	a6
+	rts
+
+__timeout:				* - timeout error
+	moveq.l	#1, d0
+	bra	__return
+	.end
