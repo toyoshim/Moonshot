@@ -21,7 +21,7 @@
 #include "controller.h"
 #include "settings.h"
 
-// #define PROTO1
+#define PROTO1
 
 enum {
   MODE_NORMAL = 0,  // Normal 2 buttons, or Capcom 6 buttons mode
