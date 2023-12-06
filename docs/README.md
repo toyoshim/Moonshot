@@ -3,6 +3,12 @@ layout: default
 title: サポートページ
 permalink: /
 ---
+<p align="center">
+
+![Moonshot](MS1.png)
+
+</p>
+
 # できること
 - 左側のUSBポートに刺したゲームコントローラをJOY STICK端子に変換する
   + 標準的な2ボタンと上下・左右同時押しを利用したSTART/SELECTボタンに対応
