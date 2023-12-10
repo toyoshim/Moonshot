@@ -4,9 +4,9 @@
 
 #include "ch559.h"
 #include "gpio.h"
-#include "hid.h"
 #include "led.h"
 #include "serial.h"
+#include "usb/hid/hid.h"
 
 #include "atari.h"
 #include "controller.h"

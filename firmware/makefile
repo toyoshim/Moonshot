@@ -36,10 +36,16 @@ clean:
 build:
 	mkdir -p build
 
-build/%.rel: %.c chlib/src/*.h *.h
+build/%.rel: %.c *.h chlib/src/*.h chlib/src/usb/*.h chlib/src/usb/hid/*.h
 	$(CC) -c $(CFLAGS) $(DEFINES) -o $@ $<
 
-build/%.rel: chlib/src/%.c chlib/src/*.h
+build/%.rel: chlib/src/%.c chlib/src/*.h chlib/src/usb/*.h chlib/src/usb/hid/*.h
+	$(CC) -c $(CFLAGS) $(DEFINES) -o $@ $<
+
+build/%.rel: chlib/src/usb/%.c chlib/src/*.h chlib/src/usb/*.h chlib/src/usb/hid/*.h
+	$(CC) -c $(CFLAGS) $(DEFINES) -o $@ $<
+
+build/%.rel: chlib/src/usb/hid/%.c chlib/src/*.h chlib/src/usb/*.h chlib/src/usb/hid/*.h
 	$(CC) -c $(CFLAGS) $(DEFINES) -o $@ $<
 
 build/$(TARGET).ihx: $(addprefix build/,$(OBJS))

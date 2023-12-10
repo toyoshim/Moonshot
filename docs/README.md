@@ -11,10 +11,12 @@ permalink: /
   + 標準的な2ボタンと上下・左右同時押しを利用したSTART/SELECTボタンに対応
     * 製品候補版以降はCPSF準拠で6ボタンに対応
   + 基板上のボタンでモードを切り替え、サイバースティックのアナログモードに対応
-  + 基板上のボタンでモードを切り替え、チェルノブコンバーターを想定したメガドライブモードに対応
-    * 製品候補版以降はX,Y,Z,Modeを追加した6ボタン仕様にも対応
+  + 製品候補版以降では基板上のボタンでモードを切り替え、チェルノブコンバーターを想定したメガドライブモードに対応
+    * X,Y,Z,Modeを追加した6ボタン仕様にも対応
   + 公式にサポートするゲームコントローラは[こちら](https://toyoshim.github.io/iona-us/firmware)を参照、実際はほとんどのコントローラが動作するはず
   + 動かないコントローラについてはご相談ください
+- サイバースティックモードではプロトコルを拡張してホストと双方向通信が可能
+  + レイアウト設定ツールがX68kから利用できるようになりました
 
 # 将来できるかもしれないこと
 - 専用ドライバを使い右側のポートを2P用に利用
@@ -29,11 +31,12 @@ permalink: /
 - 点滅2: メガドライブモード
 
 # ボタンのレイアウト
-将来的には本体でもレイアウト変えられるようにしたいと思いつつ、現状は既存のIONA-US用の[設定](https://toyoshim.github.io/iona-us/setting)ページを流用できるようにしてあります。
+既存のIONA-US用の[設定](https://toyoshim.github.io/iona-us/setting)ページを流用できるようにしてあります。
+X68kから利用するツールとは設定フォーマットが異なり、X68k側での編集結果をウェブで引き継ぐことはできません（いずれウェブ版も新フォーマット用に用意します）
 元々がアーケード向けなので関係ない設定項目がありますが、Moonshotでは無視されます。
-通常モードで設定1が、サイバースティックモードで設定2が適用されるようになっています。
+設定1が適用され、デジタルモードではアナログ１と２が追加で十字ボタンに割り当てられます。
 内部的には最大2つのコントローラに対し、それぞれ13ボタン6アナログ入力まで認識しています。
-設定するためには以下のファームウェアアップデートに必要な事前準備を済ませる必要があります。
+ウェブから設定するためには以下のファームウェアアップデートに必要な事前準備を済ませる必要があります。
 
 # ファームウェアアップデート
 ## 事前準備
@@ -72,8 +75,10 @@ async function flash() {
     'firmwares/ms_v0_98.bin',
     'firmwares/ms_v0_99_2.bin',
     'firmwares/ms_v0_99_8.bin',
+    'firmwares/ms_v0_99_9.bin',
     'firmwares/ms2_v0_99_7.bin',
     'firmwares/ms2_v0_99_8.bin',
+    'firmwares/ms2_v0_99_9.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -114,8 +119,10 @@ async function flash() {
 <option>プロトタイプ用 Ver 0.98</option>
 <option>プロトタイプ用 Ver 0.99.2</option>
 <option>プロトタイプ用 Ver 0.99.8</option>
+<option>プロトタイプ用 Ver 0.99.9</option>
 <option>製品候補用 Ver 0.99.7</option>
-<option selected>製品候補用 Ver 0.99.8</option>
+<option>製品候補用 Ver 0.99.8</option>
+<option selected>製品候補用 Ver 0.99.9</option>
 </select>
 <button onclick="flash();">書き込み</button>
 
