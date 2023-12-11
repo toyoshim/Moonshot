@@ -193,25 +193,27 @@ static void gpio_int(void) {
     // 100us per half a cycle, and decides one of them based on the request
     // pulse width. Also, if the request has negated over 100us, it starts
     // sending back data in the fastest mode, 25us.
-    // The following magic number 7 and 25 practically works in the range, 25us
-    // through to 100us.
+    // The following magic number 10 and 150 practically works in the range,
+    // 25us through to 100us.
     uint16_t count;
-    for (count = 0; count != 25; ++count) {
+    for (count = 0; count != 150; ++count) {
       ++nop;
       if (GPIO_COM) {
         break;
       }
     }
-    if (count == 25) {
+    if (count == 150) {
       // Disable the GPIO interrupt once to permit timer interrupts, etc for the
       // timeout case as there is a possible case the signal is stuck at low.
       IE_GPIO = 0;
-      count = 7;
-    } else if (count < 7) {
-      count = 7;
-    }
-    for (uint8_t n = 0; n < 5; ++n) {
-      wait(count);
+      count = 10;
+    } else {
+      if (count < 10) {
+        count = 10;
+      }
+      for (uint8_t n = 0; n < 5; ++n) {
+        wait(count);
+      }
     }
     uint16_t command = 0;
     uint8_t n;

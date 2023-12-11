@@ -71,14 +71,20 @@ LEDが消灯している事を確認してください。
 <script>
 async function flash() {
   const firmwares = [
-    'firmwares/ms_v0_97.bin',
-    'firmwares/ms_v0_98.bin',
-    'firmwares/ms_v0_99_2.bin',
     'firmwares/ms_v0_99_8.bin',
     'firmwares/ms_v0_99_9.bin',
-    'firmwares/ms2_v0_99_7.bin',
+    'firmwares/ms_v0_99_10.bin',
     'firmwares/ms2_v0_99_8.bin',
     'firmwares/ms2_v0_99_9.bin',
+    'firmwares/ms2_v0_99_10.bin',
+  ];
+  const data = [
+    'firmwares/data.bin',
+    'firmwares/data2.bin',
+    'firmwares/data2.bin',
+    'firmwares/data.bin',
+    'firmwares/data2.bin',
+    'firmwares/data2.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -91,7 +97,7 @@ async function flash() {
   await flasher.connect();
 
   await flasher.eraseData();
-  const data_url = 'firmwares/data.bin';
+  const data_url = data[document.getElementById('version').selectedIndex];
   const data_response = await fetch(data_url);
   if (data_response.ok) {
     const data_bin = await data_response.arrayBuffer();
@@ -115,14 +121,12 @@ async function flash() {
 </script>
 
 <select id="version">
-<option>プロトタイプ用 Ver 0.97</option>
-<option>プロトタイプ用 Ver 0.98</option>
-<option>プロトタイプ用 Ver 0.99.2</option>
 <option>プロトタイプ用 Ver 0.99.8</option>
 <option>プロトタイプ用 Ver 0.99.9</option>
-<option>製品候補用 Ver 0.99.7</option>
+<option>プロトタイプ用 Ver 0.99.10</option>
 <option>製品候補用 Ver 0.99.8</option>
-<option selected>製品候補用 Ver 0.99.9</option>
+<option>製品候補用 Ver 0.99.9</option>
+<option selected>製品候補用 Ver 0.99.10</option>
 </select>
 <button onclick="flash();">書き込み</button>
 
