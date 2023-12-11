@@ -13,6 +13,7 @@ enum {
   IDLE,
   REG,
   VALUE,
+  FACES,
 };
 
 static uint8_t phase = IDLE;
@@ -37,10 +38,10 @@ static uint8_t reg = 0;
 
 static bool start(uint8_t address, uint8_t dir) {
   dir;
-  if (address != 0x58) {
+  if (address != 0x58 && address != 0x08) {
     return false;
   }
-  phase = REG;
+  phase = (address == 0x08) ? FACES : REG;
   return true;
 }
 
@@ -56,6 +57,35 @@ static bool write(uint8_t data) {
 static bool read(uint8_t* data) {
   if (phase == IDLE) {
     return false;
+  }
+  if (phase == FACES) {
+    uint16_t digital = controller_digital(0);
+    *data = 0xff;
+    if (digital & 0x8000) {
+      *data &= 0x7f;
+    }
+    if (digital & 0x4000) {
+      *data &= 0xbf;
+    }
+    if (digital & 0x2000) {
+      *data &= 0xfe;
+    }
+    if (digital & 0x1000) {
+      *data &= 0xfd;
+    }
+    if (digital & 0x0800) {
+      *data &= 0xfb;
+    }
+    if (digital & 0x0400) {
+      *data &= 0xf7;
+    }
+    if (digital & 0x0200) {
+      *data &= 0xef;
+    }
+    if (digital & 0x0100) {
+      *data &= 0xdf;
+    }
+    return true;
   }
   switch (reg) {
     case 0x00:
