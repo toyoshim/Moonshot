@@ -2,7 +2,7 @@
 
 #include "mslib.h"
 
-int ms_check_version(unsigned char* major, unsigned char* minor, unsigned char* patch) {
+int ms_get_version(unsigned char* major, unsigned char* minor, unsigned char* patch) {
   int try;
   unsigned char command = 0x00;
   unsigned char data[6+4];
@@ -47,7 +47,6 @@ int ms_load_config(struct ms_config* config) {
   offset = 6;
   for (i = 0; i < 10; ++i) {
     unsigned char cmd = commands[i];
-    printf("check command %d - $%02x\n", i, cmd);
     xor = cmd ^ data[offset] ^ data[offset + 1] ^ data[offset + 2];
     if (xor != data[offset + 3]) {
       return 2;

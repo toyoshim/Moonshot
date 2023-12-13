@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "mscmd.h"
+#include "mslib.h"
 
 static unsigned char version_major = 0;
 static unsigned char version_minor = 0;
@@ -134,6 +135,10 @@ void flip() {
 }
 
 void update() {
+  static unsigned char last_data[6 + 4 * 3] = {
+    0xff, 0x00, 0x00, 0x00, 0x00, 0xff,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  };
   unsigned char commands[3];
   unsigned char data[6 + 4 * 3];
   int result;
@@ -153,42 +158,79 @@ void update() {
       return;
     }
   }
-  show_button( 8, 39, ~data[5] & 0x80);  /* A    */
-  show_button( 8, 43, ~data[5] & 0x40);  /* B    */
-  show_button( 8, 47, ~data[0] & 0x20);  /* C    */
-  show_button( 8, 53, ~data[0] & 0x10);  /* D    */
-  show_button( 8, 57, ~data[0] & 0x08);  /* E1   */
-  show_button( 8, 61, ~data[0] & 0x04);  /* E2   */
-  show_button( 8, 33, ~data[0] & 0x02);  /* St   */
-  show_button( 8, 29, ~data[0] & 0x01);  /* Sl   */
-  show_button( 8, 67, ~data[5] & 0x20);  /* A'   */
-  show_button( 8, 71, ~data[5] & 0x10);  /* B'   */
-  show_value( 8, 77, (data[1] & 0xf0) | (data[3] >> 4));
-  show_value( 8, 81, (data[1] << 4) | (data[3] & 0x0f));
-  show_value( 8, 85, (data[2] & 0xf0) | (data[4] >> 4));
-
-  show_button( 6, 13, data[ 6] & 0x80);  /* UP    */
-  show_button( 8, 13, data[ 6] & 0x40);  /* DOWN  */
-  show_button( 7, 11, data[ 6] & 0x20);  /* LEFT  */
-  show_button( 7, 15, data[ 6] & 0x10);  /* RIGHT */
-  show_button(11, 23, data[ 6] & 0x08);  /* Dig 1 */
-  show_button(12, 23, data[ 6] & 0x04);  /* Dig 2 */
-  show_button(13, 23, data[ 6] & 0x02);  /* Dig 3 */
-  show_button(14, 23, data[ 6] & 0x01);  /* Dig 4 */
-  show_button(15, 23, data[ 7] & 0x80);  /* Dig 5 */
-  show_button(16, 23, data[ 7] & 0x40);  /* Dig 6 */
-  show_button(17, 23, data[ 7] & 0x20);  /* Dig 7 */
-  show_button(18, 23, data[ 7] & 0x10);  /* Dig 8 */
-  show_button(19, 23, data[ 7] & 0x08);  /* Dig 9 */
-  show_button(20, 23, data[ 7] & 0x04);  /* Dig A */
-  show_button(21, 23, data[ 7] & 0x02);  /* Dig B */
-  show_button(22, 23, data[ 7] & 0x01);  /* Dig C */
-  show_value(23, 23, data[10]);          /* Ana 1 */
-  show_value(24, 23, data[11]);          /* Ana 2 */
-  show_value(25, 23, data[12]);          /* Ana 3 */
-  show_value(26, 23, data[14]);          /* Ana 4 */
-  show_value(27, 23, data[15]);          /* Ana 5 */
-  show_value(28, 23, data[16]);          /* Ana 6 */
+  if (last_data[0] != data[0]) {
+    show_button( 8, 47, ~data[0] & 0x20);  /* C    */
+    show_button( 8, 53, ~data[0] & 0x10);  /* D    */
+    show_button( 8, 57, ~data[0] & 0x08);  /* E1   */
+    show_button( 8, 61, ~data[0] & 0x04);  /* E2   */
+    show_button( 8, 33, ~data[0] & 0x02);  /* St   */
+    show_button( 8, 29, ~data[0] & 0x01);  /* Sl   */
+    last_data[0] = data[0];
+  }
+  if (last_data[1] != data[1] || last_data[3] != data[3]) {
+    show_value( 8, 77, (data[1] & 0xf0) | (data[3] >> 4));
+    show_value( 8, 81, (data[1] << 4) | (data[3] & 0x0f));
+    last_data[1] = data[1];
+    last_data[3] = data[3];
+  }
+  if (last_data[2] != data[2] || last_data[4] != data[4]) {
+    show_value( 8, 85, (data[2] & 0xf0) | (data[4] >> 4));
+    last_data[2] = data[2];
+    last_data[4] = data[4];
+  }
+  if (last_data[5] != data[5]) {
+    show_button( 8, 39, ~data[5] & 0x80);  /* A    */
+    show_button( 8, 43, ~data[5] & 0x40);  /* B    */
+    show_button( 8, 67, ~data[5] & 0x20);  /* A'   */
+    show_button( 8, 71, ~data[5] & 0x10);  /* B'   */
+    last_data[5] = data[5];
+  }
+  if (last_data[6] != data[6]) {
+    show_button( 6, 13, data[ 6] & 0x80);  /* UP    */
+    show_button( 8, 13, data[ 6] & 0x40);  /* DOWN  */
+    show_button( 7, 11, data[ 6] & 0x20);  /* LEFT  */
+    show_button( 7, 15, data[ 6] & 0x10);  /* RIGHT */
+    show_button(11, 23, data[ 6] & 0x08);  /* Dig 1 */
+    show_button(12, 23, data[ 6] & 0x04);  /* Dig 2 */
+    show_button(13, 23, data[ 6] & 0x02);  /* Dig 3 */
+    show_button(14, 23, data[ 6] & 0x01);  /* Dig 4 */
+    last_data[6] = data[6];
+  }
+  if (last_data[7] != data[7]) {
+    show_button(15, 23, data[ 7] & 0x80);  /* Dig 5 */
+    show_button(16, 23, data[ 7] & 0x40);  /* Dig 6 */
+    show_button(17, 23, data[ 7] & 0x20);  /* Dig 7 */
+    show_button(18, 23, data[ 7] & 0x10);  /* Dig 8 */
+    show_button(19, 23, data[ 7] & 0x08);  /* Dig 9 */
+    show_button(20, 23, data[ 7] & 0x04);  /* Dig A */
+    show_button(21, 23, data[ 7] & 0x02);  /* Dig B */
+    show_button(22, 23, data[ 7] & 0x01);  /* Dig C */
+    last_data[7] = data[7];
+  }
+  if (last_data[10] != data[10]) {
+    show_value(23, 23, data[10]);          /* Ana 1 */
+    last_data[10] = data[10];
+  }
+  if (last_data[11] != data[11]) {
+    show_value(24, 23, data[11]);          /* Ana 2 */
+    last_data[11] = data[11];
+  }
+  if (last_data[12] != data[12]) {
+    show_value(25, 23, data[12]);          /* Ana 3 */
+    last_data[12] = data[12];
+  }
+  if (last_data[14] != data[14]) {
+    show_value(26, 23, data[14]);          /* Ana 4 */
+    last_data[14] = data[14];
+  }
+  if (last_data[15] != data[15]) {
+    show_value(27, 23, data[15]);          /* Ana 5 */
+    last_data[15] = data[15];
+  }
+  if (last_data[16] != data[16]) {
+    show_value(28, 23, data[16]);          /* Ana 6 */
+    last_data[16] = data[16];
+  }
 }
 
 void screen_setup() {
@@ -235,7 +277,7 @@ void screen_setup() {
 int supervisor_main(void) {
   int bitsns = 0;
 
-  int result = ms_check_version(&version_major, &version_minor, &version_patch);
+  int result = ms_get_version(&version_major, &version_minor, &version_patch);
   if (result != 0) {
     fprintf(stderr, "Moonshot (%d): device not found\n", result);
     return 1;
@@ -333,6 +375,7 @@ int supervisor_main(void) {
     }
     bitsns = current_bitsns;
     update();
+    fflush(stdout);
   }
 
   printf("\033[%d;%dH", 31, 1);
