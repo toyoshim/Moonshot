@@ -274,9 +274,7 @@ void screen_setup() {
   fflush(stdout);
 }
 
-int supervisor_main(void) {
-  int bitsns = 0;
-
+int setup(void) {
   int result = ms_get_version(&version_major, &version_minor, &version_patch);
   if (result != 0) {
     fprintf(stderr, "Moonshot (%d): device not found\n", result);
@@ -310,83 +308,95 @@ int supervisor_main(void) {
   show_cursor(1);
   show_status("Welcome to Moonshot Layout Configurations!");
 
-  while (1) {
-    int current_bitsns =
-      (_iocs_bitsns(7) & 0x78) | ((_iocs_bitsns(6) & 0x20) >> 5) |
-      (_iocs_bitsns(2) & 0x02) | (_iocs_bitsns(3) & 0x80);
-    int edge = current_bitsns ^ bitsns;
-    int posedge = edge & current_bitsns;
-    if (posedge) {
-      show_cursor(0);
-      if (posedge & 0x10) {
-	cursor_y--;
-	if (cursor_y < 0) {
-	  cursor_y = CURSOR_ANALOG_Y_MAX;
-	  cursor_digital_x = cursor_x;
-	  cursor_x = cursor_analog_x;
-	}
-	if (cursor_y == CURSOR_DIGITAL_Y_MAX) {
-	  cursor_analog_x = cursor_x;
-	  cursor_x = cursor_digital_x;
-	}
-      } else if (posedge & 0x40) {
-	cursor_y++;
-	if (cursor_y > CURSOR_ANALOG_Y_MAX) {
-	  cursor_y = 0;
-	  cursor_analog_x = cursor_x;
-	  cursor_x = cursor_digital_x;
-	}
-	if (cursor_y == CURSOR_ANALOG_Y_MIN) {
-	  cursor_digital_x = cursor_x;
-	  cursor_x = cursor_analog_x;
-	}
-      } else if (posedge & 0x08) {
-	cursor_x--;
-	if (cursor_x < 0) {
-	cursor_x = (cursor_y > CURSOR_DIGITAL_Y_MAX)
-	  ? CURSOR_ANALOG_X_MAX : CURSOR_DIGITAL_X_MAX;
-	}
-      } else if (posedge & 0x20) {
-	int max =  (cursor_y > CURSOR_DIGITAL_Y_MAX)
-	  ? CURSOR_ANALOG_X_MAX : CURSOR_DIGITAL_X_MAX;
-	cursor_x++;
-	if (cursor_x > max) {
-	  cursor_x = 0;
-	}
-      } else if (posedge & 0x01) {
-	flip();
-      } else if (posedge & 0x02) {
-        /* TODO: dirty check */
-	break;
-      } else if (posedge & 0x80) {
-	const char* message = "Save Layout to Moonshot ...";
-	char buf[256];
-	int result;
-	show_status(message);
-	result = ms_save_config(&config);
-	if (result) {
-	  sprintf(buf, "%s Error %d", message, result);
-	} else {
-	  sprintf(buf, "%s Done", message, result);
-	}
-	show_status(buf);
-      }
-      show_cursor(1);
-    }
-    bitsns = current_bitsns;
-    update();
-    fflush(stdout);
-  }
+  return 0;
+}
 
+int loop(int bitsns) {
+  int current_bitsns =
+    (_iocs_bitsns(7) & 0x78) | ((_iocs_bitsns(6) & 0x20) >> 5) |
+    (_iocs_bitsns(2) & 0x02) | (_iocs_bitsns(3) & 0x80);
+  int edge = current_bitsns ^ bitsns;
+  int posedge = edge & current_bitsns;
+  if (posedge) {
+    show_cursor(0);
+    if (posedge & 0x10) {
+      cursor_y--;
+      if (cursor_y < 0) {
+	cursor_y = CURSOR_ANALOG_Y_MAX;
+	cursor_digital_x = cursor_x;
+	cursor_x = cursor_analog_x;
+      }
+      if (cursor_y == CURSOR_DIGITAL_Y_MAX) {
+	cursor_analog_x = cursor_x;
+	cursor_x = cursor_digital_x;
+      }
+    } else if (posedge & 0x40) {
+      cursor_y++;
+      if (cursor_y > CURSOR_ANALOG_Y_MAX) {
+	cursor_y = 0;
+	cursor_analog_x = cursor_x;
+	cursor_x = cursor_digital_x;
+      }
+      if (cursor_y == CURSOR_ANALOG_Y_MIN) {
+	cursor_digital_x = cursor_x;
+	cursor_x = cursor_analog_x;
+      }
+    } else if (posedge & 0x08) {
+      cursor_x--;
+      if (cursor_x < 0) {
+	cursor_x = (cursor_y > CURSOR_DIGITAL_Y_MAX)
+	? CURSOR_ANALOG_X_MAX : CURSOR_DIGITAL_X_MAX;
+      }
+    } else if (posedge & 0x20) {
+      int max =  (cursor_y > CURSOR_DIGITAL_Y_MAX)
+      ? CURSOR_ANALOG_X_MAX : CURSOR_DIGITAL_X_MAX;
+      cursor_x++;
+      if (cursor_x > max) {
+	cursor_x = 0;
+      }
+    } else if (posedge & 0x01) {
+      flip();
+    } else if (posedge & 0x02) {
+      /* TODO: dirty check to show warnings */
+      return -1;
+    } else if (posedge & 0x80) {
+      const char* message = "Save Layout to Moonshot ...";
+      char buf[256];
+      int result;
+      show_status(message);
+      result = ms_save_config(&config);
+      if (result) {
+	sprintf(buf, "%s Error %d", message, result);
+      } else {
+	sprintf(buf, "%s Done", message);
+      }
+      show_status(buf);
+    }
+    show_cursor(1);
+  }
+  update();
+  fflush(stdout);
+  return current_bitsns;
+}
+
+void teardown(void) {
   printf("\033[%d;%dH", 31, 1);
   printf("\033[>5l");
   _dos_kflushio(0);
-  return 0;
 }
 
 int main(void) {
   int ssp = _iocs_b_super(0);
-  int result = supervisor_main();
+
+  int result = setup();
+  if (!result) {
+    int bitsns = 0;
+    do {
+      bitsns = loop(bitsns);
+    } while (bitsns >= 0);
+    teardown();
+  }
+
   if (ssp) {
     _iocs_b_super(ssp);
   }
