@@ -137,3 +137,30 @@ async function flash() {
 
 結果
 <pre id="error"></pre>
+
+<pre id="console" align="center"></pre>
+
+<style type="text/css">
+@font-face {
+  font-family: 'Elisa8';
+  src: url('JF-Dot-Elisa8.ttf') format('truetype');
+}
+
+pre.console-line {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 12px;
+  font-family: 'Elisa8', monospace;
+  line-height: 1;
+  box-shadow: none;
+  text-shadow: 0 0 1rem #0f0, 0 0 1rem #00f;
+}
+</style>
+<script type="module">
+  import { MsConf } from './msconf.js';
+  import { Console }  from './console.js';
+  const console = new Console(96, 32, document.getElementById('console'));
+  const msconf = new MsConf(console);
+  msconf.run();
+</script>
