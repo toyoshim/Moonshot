@@ -7,7 +7,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 99
-#define VERSION_PATCH 10
-#define VERSION_STRING "0.99.10"
+#define VERSION_PATCH 11
+#define VERSION_STRING "0.99.11"
 
 #endif  // __version_h__
