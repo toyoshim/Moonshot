@@ -52,7 +52,6 @@ static const char* get_string(uint8_t no) {
 void recv(const uint8_t* buffer, uint8_t len) {
   uint8_t response[4];
   for (uint8_t i = 0; i < len; ++i) {
-    Serial.printf("cmd: %x\n", buffer[i]);
     command_execute(buffer[i], response);
     cdc_device_send(response, 4);
   }

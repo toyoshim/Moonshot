@@ -138,7 +138,7 @@ static bool read(uint8_t* data) {
   return true;
 }
 
-static void end() {}
+static void end(void) {}
 
 void grove_init(void (*interrupt_handler)(void)) {
   struct i2c i2c;

@@ -189,14 +189,11 @@ pre.console-line {
         this.Module.HEAPU8[res_ptr + 4 * i + 8] = result[2];
         this.Module.HEAPU8[res_ptr + 4 * i + 9] = result[3];
       }
-      if (this.Module.io.demo) {
-        return new Promise((resolve, reject) => {
-          setTimeout(e => {
-            resolve(error);
-          }, 1);
-        });
-      }
-      return error;
+      return new Promise((resolve, reject) => {
+        setTimeout(e => {
+          resolve(error);
+        }, 1);
+      });
     },
     bitsns: bitsns => {
       return this.Module.io.iocs_bitsns(bitsns);

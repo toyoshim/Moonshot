@@ -15,9 +15,10 @@ class IO {
   console = null;
   bitsns = null;
   port = null;
+  reader = null;
   demo = false;
-  demo_transfer = 0;
-  demo_transfer_length = 0;
+  transfer = 0;
+  transfer_length = 0;
 
   constructor(console) {
     this.console = console;
@@ -40,7 +41,10 @@ class IO {
         filters: [{ usbVendorId: 0x0483, usbProductId: 0x16c0 }]
       });
       await this.port.open({ baudRate: 115200 });
+      this.writer = await this.port.writable.getWriter();
+      this.reader = await this.port.readable.getReader();
     } catch (e) {
+      this.port = null;
       console.log(e);
     }
   }
@@ -48,10 +52,10 @@ class IO {
   async comm(command) {
     if (this.demo) {
       const data = new Uint8Array(4);
-      if (this.demo_transfer) {
-        switch (this.demo_transfer) {
+      if (this.transfer) {
+        switch (this.transfer) {
           case 0xf3:
-            this.demo_transfer_length = (command + 4) >> 2;
+            this.transfer_length = (command + 4) >> 2;
           case 0xf0:
           case 0xf1:
           case 0xf2:
@@ -67,13 +71,13 @@ class IO {
             data[3] = 0;
             break;
         }
-        if (this.demo_transfer == 0xf5) {
-          this.demo_transfer_length--;
-          if (this.demo_transfer_length < 0) {
-            this.demo_transfer = 0;
+        if (this.transfer == 0xf5) {
+          this.transfer_length--;
+          if (this.transfer_length < 0) {
+            this.transfer = 0;
           }
         } else {
-          this.demo_transfer = 0;
+          this.transfer = 0;
         }
         return data;
       }
@@ -96,7 +100,7 @@ class IO {
           data[0] = command;
           data[1] = command;
           data[2] = command;
-          this.demo_transfer = command;
+          this.transfer = command;
           break;
         default:
           return null;
@@ -107,16 +111,54 @@ class IO {
     if (!this.port) {
       return null;
     }
-    const writer = this.port.writable.getWriter();
+    if (this.transfer) {
+      if (this.transfer == 0xf3) {
+        this.transfer_length = command;
+      }
+      if (this.transfer == 0xf5 || this.transfer == 0xf4) {
+        this.transfer_length--;
+        if (this.transfer_length < 0) {
+          this.transfer = 0;
+        }
+      } else {
+        this.transfer = 0;
+      }
+    } else {
+      switch (command) {
+        case 0x01:
+        case 0x02:
+        case 0x03:
+          return [0, 0, 0, command];
+        case 0xf0:
+        case 0xf1:
+        case 0xf2:
+        case 0xf3:
+          this.transfer = command;
+          break;
+        case 0xf4:
+          this.transfer = command;
+          this.transfer_length++;
+          break;
+        case 0xf5:
+          this.transfer = command;
+          this.transfer_length = (this.transfer_length >> 2) + 1;
+          break;
+        default:
+          break;
+      }
+    }
     const commandBuffer = new Uint8Array(1);
     commandBuffer[0] = command;
-    await writer.write(commandBuffer);
-    await writer.close();
-    const reader = this.port.readable.getReader();
-    const readBuffer = new Uint8Array(4);
-    const { value, done } = await reader.read();
-    console.log(value);
-    return value;
+    await this.writer.write(commandBuffer);
+    const receiveBuffer = new Uint8Array(4);
+    let read = 0;
+    do {
+      const { value, done } = await this.reader.read();
+      for (let i = 0; i < value.length; ++i) {
+        receiveBuffer[read++] = value[i];
+      }
+    } while (read != 4);
+    return receiveBuffer;
   }
 
   iocs_bitsns(group) {
