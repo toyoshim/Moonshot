@@ -138,6 +138,8 @@ async function flash() {
 結果
 <pre id="error"></pre>
 
+<button id="connect">接続</button>
+<button id="demo">デモ</button>
 <pre id="console" align="center"></pre>
 
 <style type="text/css">
@@ -157,10 +159,68 @@ pre.console-line {
   text-shadow: 0 0 1rem #0f0, 0 0 1rem #00f;
 }
 </style>
-<script type="module">
-  import { MsConf } from './msconf.js';
-  import { Console }  from './console.js';
-  const console = new Console(96, 32, document.getElementById('console'));
-  const msconf = new MsConf(console);
-  msconf.run();
+<script type="text/javascript" src="./console.js"></script>
+<script type="text/javascript" src="./io.js"></script>
+<script type="text/javascript">
+  var Module = {
+    console: new Console(96, 32, document.getElementById('console')),
+    io: new IO(this.console),
+    print: (text) => {},
+    printErr: (text) => {},
+    ms_comm: async (len, cmd_ptr, res_ptr) => {
+      if (!this.Module.io.connected()) {
+        return 128;
+      }
+      this.Module.HEAPU8[res_ptr + 0] = 0xff;
+      this.Module.HEAPU8[res_ptr + 1] = 0x00;
+      this.Module.HEAPU8[res_ptr + 2] = 0x00;
+      this.Module.HEAPU8[res_ptr + 3] = 0x00;
+      this.Module.HEAPU8[res_ptr + 4] = 0x00;
+      this.Module.HEAPU8[res_ptr + 5] = 0xff;
+      let error = 0;
+      for (let i = 0; i < len; ++i) {
+        let result = await this.Module.io.comm(this.Module.HEAPU8[cmd_ptr + i]);
+        if (!result) {
+          error = 129;
+          break;
+        }
+        this.Module.HEAPU8[res_ptr + 4 * i + 6] = result[0];
+        this.Module.HEAPU8[res_ptr + 4 * i + 7] = result[1];
+        this.Module.HEAPU8[res_ptr + 4 * i + 8] = result[2];
+        this.Module.HEAPU8[res_ptr + 4 * i + 9] = result[3];
+      }
+      if (this.Module.io.demo) {
+        return new Promise((resolve, reject) => {
+          setTimeout(e => {
+            resolve(error);
+          }, 1);
+        });
+      }
+      return error;
+    },
+    bitsns: bitsns => {
+      return this.Module.io.iocs_bitsns(bitsns);
+    },
+    preRun: () => {
+      this.printChar = (stream, curr) => {
+        this.Module.console.print(stream, String.fromCharCode(curr));
+      };
+    },
+    postRun: () => {
+      window.console.log(this);
+    },
+  };
+  document.getElementById('connect').addEventListener('click', async e => {
+    await Module.io.connect();
+    if (Module.io.connected()) {
+      Module._main();
+    }
+  });
+  document.getElementById('demo').addEventListener('click', async e => {
+    Module.io.demo = true;
+    if (Module.io.connected()) {
+      Module._main();
+    }
+  });
 </script>
+<script async type="text/javascript" src="msconf.js"></script>

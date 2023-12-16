@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-export class Console {
+class Console {
   width = 0;
   height = 0;
   element = null;
@@ -55,11 +55,25 @@ export class Console {
     }
   }
 
+  cls() {
+    this.cursor.x = 0;
+    this.cursor.y = 0;
+    for (let y = 0; y < this.height; ++y) {
+      for (let x = 0; x < this.width; ++x) {
+        this.lines[y].chars[x] = ' ';
+      }
+      this.lines[y].element.textContent = this.lines[y].chars.join('');
+    }
+  }
+
   print(fd, str) {
     for (let c of str) {
       if (this.escape) {
         this.sequence += c;
-        if (this.sequence.match(/\[>5h/) || this.sequence.match(/\[2J/)) {
+        if (this.sequence.match(/\[>5h/)) {
+          this.escape = false;
+        } else if (this.sequence.match(/\[2J/)) {
+          this.cls();
           this.escape = false;
         } else if (this.sequence.match(/\[1K/)) {
           for (let x = 0; x < this.cursor.x; ++x) {

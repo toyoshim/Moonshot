@@ -6,10 +6,10 @@ all: msconf.x
 	./msconf.x
 
 clean:
-	rm -f *.o *.x msconf.html
+	rm -f *.o msconf.html msconf.js msconf.wasm
 
 wasm: msconf.html
-	cp msconf.wasm ../docs/
+	cp msconf.wasm msconf.js ../docs/
 
 msconf.x: msconf.o mslib.o mscmd.o
 	${CC} -o $@ -liocs -ldos $^
@@ -23,6 +23,8 @@ mslib.o: mslib.has
 %.wasm.o: %.c wasm/*.h
 	iconv --from-code=cp932 --to-code=utf8 $< | emcc -c -O3 -Iwasm -o $@ -x c -
 
-msconf.html: msconf.wasm.o
-	emcc -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall"]' -s NO_EXIT_RUNTIME=1 \
-		-s WARN_ON_UNDEFINED_SYMBOLS=0 -o $@ $<
+%.wasm.o: wasm/%.c wasm/*.h
+	emcc -c -O3 -o $@ $<
+
+msconf.html: msconf.wasm.o mscmd.wasm.o mslib.wasm.o
+	emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s ASYNCIFY -s WARN_ON_UNDEFINED_SYMBOLS=0 -o $@ $^

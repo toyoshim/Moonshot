@@ -1,5 +1,7 @@
 #include "mscmd.h"
 
+#include <string.h>  // TODO: upstream
+
 #include "mslib.h"
 
 int ms_get_version(unsigned char* major, unsigned char* minor, unsigned char* patch) {
