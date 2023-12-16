@@ -27,4 +27,4 @@ mslib.o: mslib.has
 	emcc -c -O3 -o $@ $<
 
 msconf.html: msconf.wasm.o mscmd.wasm.o mslib.wasm.o
-	emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s ASYNCIFY -s WARN_ON_UNDEFINED_SYMBOLS=0 -o $@ $^
+	emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=8192 -s WARN_ON_UNDEFINED_SYMBOLS=0 -o $@ $^

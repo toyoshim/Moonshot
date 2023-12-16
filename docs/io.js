@@ -115,7 +115,6 @@ class IO {
     const reader = this.port.readable.getReader();
     const readBuffer = new Uint8Array(4);
     const { value, done } = await reader.read();
-    await reader.close();
     console.log(value);
     return value;
   }

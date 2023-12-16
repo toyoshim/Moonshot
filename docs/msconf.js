@@ -1401,7 +1401,7 @@ function _iocs_bitsns(bitsns) { return this.Module.bitsns(bitsns); }
   Disabled:3,
   },
   state:0,
-  StackSize:4096,
+  StackSize:8192,
   currData:null,
   handleSleepReturnValue:0,
   exportCallStack:[],

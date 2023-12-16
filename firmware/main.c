@@ -23,9 +23,6 @@ static const char kString01Manufacturer[] = "Mellow PCB - mellow.twintail.org";
 static const char kString02Product[] = "Moonshot";
 static const char kString03SerialNumber[] = VERSION_STRING;
 
-static uint8_t cdc_response[4];
-static uint8_t cdc_response_offset = 4;
-
 static struct settings* settings = 0;
 
 static uint8_t get_string_length(uint8_t no) {
@@ -52,23 +49,13 @@ static const char* get_string(uint8_t no) {
   return 0;
 }
 
-void send(uint8_t* buffer, uint8_t* len) {
-  if (cdc_response_offset >= 4) {
-    *len = 0;
-  } else {
-    for (uint8_t i = 0; i < 4; ++i) {
-      buffer[i] = cdc_response[i];
-    }
-    *len = 4;
-    cdc_response_offset = 4;
-  }
-}
-
 void recv(const uint8_t* buffer, uint8_t len) {
+  uint8_t response[4];
   for (uint8_t i = 0; i < len; ++i) {
-    command_execute(buffer[i], cdc_response);
+    Serial.printf("cmd: %x\n", buffer[i]);
+    command_execute(buffer[i], response);
+    cdc_device_send(response, 4);
   }
-  cdc_response_offset = 0;
 }
 
 static void detected(void) {
@@ -93,7 +80,6 @@ void main(void) {
   device.bcd_device = 0x0100;
   device.get_string_length = get_string_length;
   device.get_string = get_string;
-  device.send = send;
   device.recv = recv;
 
   cdc_device_init(&device);
