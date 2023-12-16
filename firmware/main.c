@@ -60,6 +60,7 @@ void send(uint8_t* buffer, uint8_t* len) {
       buffer[i] = cdc_response[i];
     }
     *len = 4;
+    cdc_response_offset = 4;
   }
 }
 
@@ -98,7 +99,7 @@ void main(void) {
   cdc_device_init(&device);
 
   led_init(1, 5, LOW);
-  Serial.print("MP17-Moonshot ver " VERSION_STRING " - ");
+  Serial.print("\nMP17-Moonshot ver " VERSION_STRING " - ");
 
   if (!settings_init()) {
     led_mode(L_BLINK_THREE_TIMES);
@@ -110,7 +111,7 @@ void main(void) {
 
   atari_init();
 
-  while (timer3_tick_raw() < 0x1000) {
+  while (timer3_tick_raw() < 0x4000) {
     uint8_t state = usb_device_state();
     led_poll();
     if (state != UD_STATE_IDLE) {
@@ -123,10 +124,10 @@ void main(void) {
     led_mode(L_FASTER_BLINK);
   } else {
     Serial.println("HOST mode");
-    if (bad_settings) {
-      for (;;) {
-        led_poll();
-      }
+  }
+  if (device_mode || bad_settings) {
+    for (;;) {
+      led_poll();
     }
   }
 
