@@ -138,7 +138,7 @@ void controller_update(const uint8_t hub,
   raw_data =
       (u ? 0x8000 : 0) | (d ? 0x4000 : 0) | (l ? 0x2000 : 0) | (r ? 0x1000 : 0);
 
-  struct settings* settings = settings_get();
+  struct settings_map* settings = settings_get_map();
   uint8_t i;
   for (i = 0; i < 6; ++i) {
     uint16_t value = analog_check(info, data, i);
@@ -150,36 +150,42 @@ void controller_update(const uint8_t hub,
       u |= value < 0x6000;
       d |= value > 0xa000;
     }
-    uint8_t index = settings->map[hub].analog[i].map;
+    uint8_t index = settings->analog[i];
     if (index != 0xff) {
       analog[hub][index] = value;
     }
   }
 
-  uint16_t digital_map = 0;
+  uint8_t digital_map1 = 0;
+  uint8_t digital_map2 = 0;
   if (u) {
-    digital_map |= settings->map[hub].digital[0].map;
+    digital_map1 |= settings->digital[0].map1;
+    digital_map2 |= settings->digital[0].map2;
   }
   if (d) {
-    digital_map |= settings->map[hub].digital[1].map;
+    digital_map1 |= settings->digital[1].map1;
+    digital_map2 |= settings->digital[1].map2;
   }
   if (l) {
-    digital_map |= settings->map[hub].digital[2].map;
+    digital_map1 |= settings->digital[2].map1;
+    digital_map2 |= settings->digital[2].map2;
   }
   if (r) {
-    digital_map |= settings->map[hub].digital[3].map;
+    digital_map1 |= settings->digital[3].map1;
+    digital_map2 |= settings->digital[3].map2;
   }
 
+  struct settings_sequence* sequence = settings_get_sequence();
   for (i = 0; i < 12; ++i) {
     bool on = button_check(info->button[i], data);
     raw_data |= on ? (1 << (11 - i)) : 0;
-    uint8_t rapid_fire = settings->map[hub].digital[4 + i].rapid_fire;
-    if ((settings->sequence[rapid_fire].on && on) ^
-        settings->sequence[rapid_fire].invert) {
-      digital_map |= settings->map[hub].digital[4 + i].map;
+    uint8_t rapid_fire = settings->digital[4 + i].rapid_fire;
+    if ((sequence[rapid_fire].on && on) ^ sequence[rapid_fire].invert) {
+      digital_map1 |= settings->digital[4 + i].map1;
+      digital_map2 |= settings->digital[4 + i].map2;
     }
   }
-  digital[hub] = digital_map;
+  digital[hub] = (digital_map1 << 8) | digital_map2;
   raw_digital[hub] = raw_data;
 }
 

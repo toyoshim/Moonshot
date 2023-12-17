@@ -147,16 +147,14 @@ void command_execute(uint8_t command, uint8_t* result) {
         result[2] = 0;
         break;
       case STORE_LAYOUT_SETTINGS:
-        settings_deserialize((const struct settings_ms68*)scratch_memory,
-                             operating_player);
-        result[0] = settings_save() ? sizeof(struct settings_ms68) : 0;
+        settings_save_map((const struct settings_map*)scratch_memory);
+        result[0] = settings_commit() ? sizeof(struct settings_map) : 0;
         result[1] = 0;
         result[2] = 0;
         break;
       case LOAD_LAYOUT_SETTINGS:
-        settings_serialize((struct settings_ms68*)scratch_memory,
-                           operating_player);
-        result[0] = sizeof(struct settings_ms68);
+        settings_load_map((struct settings_map*)scratch_memory);
+        result[0] = sizeof(struct settings_map);
         result[1] = 0;
         result[2] = 0;
         break;

@@ -8,27 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-struct settings {
-  struct {
-    struct {
-      uint16_t map;
-      uint8_t rapid_fire;
-    } digital[16];
-    struct {
-      uint8_t map;
-      bool polarity;
-    } analog[6];
-  } map[2];
-  struct {
-    uint8_t pattern;
-    uint8_t bit;
-    uint8_t mask;
-    bool invert;
-    bool on;
-  } sequence[8];
-};
-
-struct settings_ms68 {
+struct settings_map {
   struct {
     uint8_t map1;
     uint8_t map2;
@@ -37,12 +17,20 @@ struct settings_ms68 {
   } digital[16];
   uint8_t analog[6];
 };
+struct settings_sequence {
+  uint8_t pattern;
+  uint8_t bit;
+  uint8_t mask;
+  bool invert;
+  bool on;
+};
 
 bool settings_init(void);
-struct settings* settings_get(void);
+struct settings_map* settings_get_map(void);
+struct settings_sequence* settings_get_sequence(void);
 void settings_rapid_sync(void);
-void settings_serialize(struct settings_ms68* ms68, uint8_t player);
-void settings_deserialize(const struct settings_ms68* ms68, uint8_t player);
-bool settings_save(void);
+void settings_load_map(struct settings_map* map);
+void settings_save_map(const struct settings_map* map);
+bool settings_commit(void);
 
 #endif  // __settings_h__

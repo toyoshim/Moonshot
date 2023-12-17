@@ -23,8 +23,6 @@ static const char kString01Manufacturer[] = "Mellow PCB - mellow.twintail.org";
 static const char kString02Product[] = "Moonshot";
 static const char kString03SerialNumber[] = VERSION_STRING;
 
-static struct settings* settings = 0;
-
 static uint8_t get_string_length(uint8_t no) {
   switch (no) {
     case 1:
@@ -92,7 +90,6 @@ void main(void) {
   } else {
     led_mode(L_ON);
   }
-  settings = settings_get();
 
   atari_init();
 
