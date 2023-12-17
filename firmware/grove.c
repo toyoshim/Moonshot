@@ -50,6 +50,8 @@ static bool write(uint8_t data) {
     reg = data;
     phase = VALUE;
     return true;
+  } else if (phase == FACES) {
+    return true;
   }
   return false;
 }
