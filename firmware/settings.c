@@ -10,57 +10,6 @@
 static struct settings settings;
 static uint8_t flash[169];
 
-static bool load_ionc_config(void) {
-  if (!flash_read(10, flash, 169)) {
-    return false;
-  }
-  uint16_t offset = 3;  // Skip core settings
-  // Analiog map
-  for (uint8_t p = 0; p < 2; ++p) {
-    for (uint8_t i = 0; i < 6; ++i) {
-      const uint8_t data = flash[offset++];
-      const uint8_t type = data >> 4;
-      settings.map[p].analog[i].map = (type == 2) ? (data & 7) : 0xff;
-      settings.map[p].analog[i].polarity = data & 8;
-    }
-  }
-
-  // Digital map
-  for (uint8_t p = 0; p < 2; ++p) {
-    for (uint8_t i = 0; i < 16; ++i) {
-      uint16_t map = (flash[offset++] << 8) | flash[offset++];
-      settings.map[p].digital[i].map = map;
-      // Skip cross-player map
-      offset += 2;
-    }
-  }
-
-  // Rapid fire settings
-  for (uint8_t p = 0; p < 2; ++p) {
-    for (uint8_t i = 0; i < 8; ++i) {
-      const uint8_t data = (i < 2) ? 0 : flash[offset++];
-      settings.map[p].digital[i * 2 + 0].rapid_fire = (data >> 4) & 7;
-      settings.map[p].digital[i * 2 + 1].rapid_fire = data & 7;
-    }
-  }
-
-  // Rapid fire patterns.
-  settings.sequence[0].pattern = 0xff;
-  settings.sequence[0].bit = 1;
-  settings.sequence[0].mask = 0xff;
-  settings.sequence[0].invert = false;
-  settings.sequence[0].on = true;
-  for (uint8_t i = 1; i < 8; ++i) {
-    settings.sequence[i].pattern = flash[offset++];
-    settings.sequence[i].bit = 1;
-    settings.sequence[i].mask = (2 << (flash[offset] & 7)) - 1;
-    settings.sequence[i].invert = flash[offset++] & 0x80;
-    settings.sequence[i].on = true;
-  }
-
-  return true;
-}
-
 static void load_rapid_fire_preset(void) {
   static const uint8_t patterns[] = {0x01, 0x01, 0x01, 0x03,
                                      0x03, 0x07, 0x07, 0x0f};
@@ -89,11 +38,7 @@ static bool load_ms68_config(void) {
 }
 
 bool settings_init(void) {
-  if (flash_init(*((uint32_t*)"IONC"), false)) {
-    if (!load_ionc_config()) {
-      return false;
-    }
-  } else if (flash_init(*((uint32_t*)"MS68"), false)) {
+  if (flash_init(*((uint32_t*)"MS68"), false)) {
     if (!load_ms68_config()) {
       return false;
     }
