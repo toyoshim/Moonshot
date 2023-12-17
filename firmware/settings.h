@@ -21,11 +21,10 @@ struct settings_sequence {
   uint8_t pattern;
   uint8_t bit;
   uint8_t mask;
-  bool invert;
   bool on;
 };
 
-bool settings_init(void);
+void settings_init(void);
 struct settings_map* settings_get_map(void);
 struct settings_sequence* settings_get_sequence(void);
 void settings_rapid_sync(void);

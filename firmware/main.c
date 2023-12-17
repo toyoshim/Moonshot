@@ -65,7 +65,6 @@ static uint8_t get_flags(void) {
 
 void main(void) {
   bool device_mode = false;
-  bool bad_settings = false;
 
   initialize();
 
@@ -78,20 +77,16 @@ void main(void) {
   device.get_string_length = get_string_length;
   device.get_string = get_string;
   device.recv = recv;
-
   cdc_device_init(&device);
 
   led_init(1, 5, LOW);
-  Serial.print("\nMP17-Moonshot ver " VERSION_STRING " - ");
+  led_mode(L_ON);
 
-  if (!settings_init()) {
-    led_mode(L_BLINK_THREE_TIMES);
-    bad_settings = true;
-  } else {
-    led_mode(L_ON);
-  }
+  settings_init();
 
   atari_init();
+
+  Serial.print("\nMP17-Moonshot ver " VERSION_STRING " - ");
 
   while (timer3_tick_raw() < 0x3000) {
     uint8_t state = usb_device_state();
@@ -107,7 +102,7 @@ void main(void) {
   } else {
     Serial.println("HOST mode");
   }
-  if (device_mode || bad_settings) {
+  if (device_mode) {
     for (;;) {
       led_poll();
     }

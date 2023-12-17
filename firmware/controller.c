@@ -180,7 +180,7 @@ void controller_update(const uint8_t hub,
     bool on = button_check(info->button[i], data);
     raw_data |= on ? (1 << (11 - i)) : 0;
     uint8_t rapid_fire = settings->digital[4 + i].rapid_fire;
-    if ((sequence[rapid_fire].on && on) ^ sequence[rapid_fire].invert) {
+    if (sequence[rapid_fire].on && on) {
       digital_map1 |= settings->digital[4 + i].map1;
       digital_map2 |= settings->digital[4 + i].map2;
     }
