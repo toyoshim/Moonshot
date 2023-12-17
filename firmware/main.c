@@ -96,7 +96,7 @@ void main(void) {
 
   atari_init();
 
-  while (timer3_tick_raw() < 0x4000) {
+  while (timer3_tick_raw() < 0x3000) {
     uint8_t state = usb_device_state();
     led_poll();
     if (state != UD_STATE_IDLE) {
