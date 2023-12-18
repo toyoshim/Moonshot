@@ -448,7 +448,11 @@ void atari_poll(void) {
 }
 
 void atari_set_mode(uint8_t new_mode) {
-  mode = new_mode;
+  if (new_mode > MODE_LAST) {
+    mode = MODE_NORMAL;
+  } else {
+    mode = new_mode;
+  }
   switch (mode) {
     case MODE_NORMAL:
       led_mode(L_ON);

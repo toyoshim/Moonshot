@@ -4,6 +4,7 @@
 
 #include "command.h"
 
+#include "atari.h"
 #include "controller.h"
 #include "settings.h"
 #include "version.h"
@@ -13,6 +14,7 @@ enum {
   GET_RAW_DIGITAL = 0x01,
   GET_RAW_ANALOG_1_3 = 0x02,
   GET_RAW_ANALOG_4_6 = 0x03,
+  COMMIT_LAYOUT_SETTINGS = 0x04,
 
   INV_TRANSFER_TO_HOST = 0x0a,
   INV_TRANSFER_TO_DEVICE = 0x0b,
@@ -20,6 +22,7 @@ enum {
   STORE_OPERATING_PLAYER = 0x10,
   STORE_LAYOUT_SETTINGS = 0x11,
   LOAD_LAYOUT_SETTINGS = 0x12,
+  STORE_OPERATING_MODE = 0x13,
 
   SET_TRANSFER_SPACE = 0xf0,
   SET_TRANSFER_ADDRESS = 0xf1,
@@ -139,6 +142,12 @@ void command_execute(uint8_t command, uint8_t* result) {
         result[1] = controller_raw_analog(operating_player, 4) >> 8;
         result[2] = controller_raw_analog(operating_player, 5) >> 8;
         break;
+      case COMMIT_LAYOUT_SETTINGS:
+        settings_commit();
+        result[0] = sizeof(struct settings_map);
+        result[1] = 0;
+        result[2] = 0;
+        break;
 
       case STORE_OPERATING_PLAYER:
         operating_player = scratch_memory[0] & 1;
@@ -148,13 +157,19 @@ void command_execute(uint8_t command, uint8_t* result) {
         break;
       case STORE_LAYOUT_SETTINGS:
         settings_save_map((const struct settings_map*)scratch_memory);
-        result[0] = settings_commit() ? sizeof(struct settings_map) : 0;
+        result[0] = sizeof(struct settings_map);
         result[1] = 0;
         result[2] = 0;
         break;
       case LOAD_LAYOUT_SETTINGS:
         settings_load_map((struct settings_map*)scratch_memory);
         result[0] = sizeof(struct settings_map);
+        result[1] = 0;
+        result[2] = 0;
+        break;
+      case STORE_OPERATING_MODE:
+        atari_set_mode(scratch_memory[0]);
+        result[0] = scratch_memory[0];
         result[1] = 0;
         result[2] = 0;
         break;

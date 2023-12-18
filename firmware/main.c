@@ -99,14 +99,11 @@ void main(void) {
   if (device_mode) {
     Serial.println("CDC mode");
     led_mode(L_FASTER_BLINK);
-  } else {
-    Serial.println("HOST mode");
-  }
-  if (device_mode) {
     for (;;) {
       led_poll();
     }
   }
+  Serial.println("HOST mode");
 
   struct hid hid;
   hid.report = controller_update;
