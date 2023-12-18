@@ -21,14 +21,15 @@
 #include "controller.h"
 #include "settings.h"
 
-// #define PROTO1
+#define PROTO1
 
 enum {
   MODE_NORMAL = 0,  // Normal 2 buttons, or Capcom 6 buttons mode
   MODE_CYBER = 1,   // Cyber Stick mode
-  MODE_MD = 2,      // Mega Drive 3B / 6B
+  MODE_SAFE = 2,    // Safe mode
+  MODE_MD = 3,      // Mega Drive 3B / 6B
 #ifdef PROTO1
-  MODE_LAST = MODE_CYBER,
+  MODE_LAST = MODE_SAFE,
 #else
   MODE_LAST = MODE_MD,
 #endif
@@ -42,6 +43,11 @@ static uint16_t frame_timer = 0;
 static bool button_pressed = false;
 static volatile uint8_t mode = MODE_NORMAL;
 static volatile uint8_t nop = 0;  // used to avoid compiler optimization
+
+// 150 for cyberstick mode, 0x7fff for safe mode.
+static volatile uint16_t cyber_timeout = 150;
+// 10 for cyberstick mode, 0x7000 for safe mode.
+static volatile uint16_t cyber_minimum = 10;
 
 #ifdef PROTO1
 
@@ -185,7 +191,7 @@ static void gpio_int(void) {
     P3 = out[1];
     P4_OUT = out[1];
     return;
-  } else if (mode == MODE_CYBER) {
+  } else if (mode == MODE_CYBER || mode == MODE_SAFE) {
     if (GPIO_COM) {
       return;
     }
@@ -193,23 +199,25 @@ static void gpio_int(void) {
     // 100us per half a cycle, and decides one of them based on the request
     // pulse width. Also, if the request has negated over 100us, it starts
     // sending back data in the fastest mode, 25us.
-    // The following magic number 10 and 150 practically works in the range,
-    // 25us through to 100us.
+    // The following magic number cyber_minimum and cyber_timeout practically
+    // works in the range, 25us through to 100us in the cyberstick mode.
+    // For the safe mode, they are set to longer values so that it can work on
+    // slow communication cases such as XM6 over U-kun, or X68000Z.
     uint16_t count;
-    for (count = 0; count != 150; ++count) {
+    for (count = 0; count != cyber_timeout; ++count) {
       ++nop;
       if (GPIO_COM) {
         break;
       }
     }
-    if (count == 150) {
+    if (count == cyber_timeout) {
       // Disable the GPIO interrupt once to permit timer interrupts, etc for the
       // timeout case as there is a possible case the signal is stuck at low.
       IE_GPIO = 0;
-      count = 10;
+      count = cyber_minimum;
     } else {
-      if (count < 10) {
-        count = 10;
+      if (count < cyber_minimum) {
+        count = cyber_minimum;
       }
       for (uint8_t n = 0; n < 5; ++n) {
         wait(count);
@@ -360,7 +368,7 @@ void atari_poll(void) {
     P3 = out[1];
     P4_OUT = out[1];
 #endif
-  } else if (mode == MODE_CYBER) {
+  } else if (mode == MODE_CYBER || mode == MODE_SAFE) {
     uint16_t d = ~controller_digital(0);
     uint8_t d0 = d >> 8;
     uint8_t d1 = d;
@@ -438,7 +446,22 @@ void atari_poll(void) {
         grove_update_interrupt(0);
         break;
       case MODE_CYBER:
+        led_mode(L_FAST_BLINK);
+        cyber_timeout = 150;
+        cyber_minimum = 10;
+        SET_LOW_CYCLE_SIGNALS(0x0f);
+        RESET_READY();
+#ifdef PROTO1
+        grove_update_interrupt(bIE_RXD1_LO);
+#else
+        P2 = 0xdf;
+        grove_update_interrupt(bIE_P1_4_LO);
+#endif
+        break;
+      case MODE_SAFE:
         led_mode(L_BLINK);
+        cyber_timeout = 0x7fff;
+        cyber_minimum = 0x7000;
         SET_LOW_CYCLE_SIGNALS(0x0f);
         RESET_READY();
 #ifdef PROTO1
