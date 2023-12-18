@@ -6,11 +6,13 @@
 #define __atari_h__
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "grove.h"
 #include "interrupt.h"
 
 void atari_init(void);
 void atari_poll(void);
+void atari_set_mode(uint8_t mode);
 
 #endif  // __atari_h__

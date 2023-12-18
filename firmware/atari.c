@@ -271,47 +271,6 @@ static void gpio_int(void) {
   }
 }
 
-static void set_mode(uint8_t new_mode) {
-  mode = new_mode;
-  switch (mode) {
-    case MODE_NORMAL:
-      led_mode(L_ON);
-      grove_update_interrupt(0);
-      break;
-    case MODE_CYBER:
-      led_mode(L_FAST_BLINK);
-      cyber_timeout = 150;
-      cyber_minimum = 10;
-      SET_LOW_CYCLE_SIGNALS(0x0f);
-      RESET_READY();
-#ifdef PROTO1
-      grove_update_interrupt(bIE_RXD1_LO);
-#else
-      P2 = 0xdf;
-      grove_update_interrupt(bIE_P1_4_LO);
-#endif
-      break;
-    case MODE_SAFE:
-      led_mode(L_BLINK);
-      cyber_timeout = 0x7fff;
-      cyber_minimum = 0x7000;
-      SET_LOW_CYCLE_SIGNALS(0x0f);
-      RESET_READY();
-#ifdef PROTO1
-      grove_update_interrupt(bIE_RXD1_LO);
-#else
-      P2 = 0xdf;
-      grove_update_interrupt(bIE_P1_4_LO);
-#endif
-      break;
-    case MODE_MD:
-      // PROTO1 doesn't enter this code path.
-      led_mode(L_BLINK_TWICE);
-      grove_update_interrupt(bIE_P5_7_HI);
-      break;
-  }
-}
-
 void atari_init(void) {
   pinMode(4, 6, INPUT_PULLUP);
   for (uint8_t bit = 0; bit < 6; ++bit) {
@@ -345,6 +304,8 @@ void atari_init(void) {
   frame_timer = timer3_tick_msec();
 
   grove_init(gpio_int);
+
+  atari_set_mode(settings_load_mode());
 }
 
 void atari_poll(void) {
@@ -480,7 +441,49 @@ void atari_poll(void) {
     if (new_mode > MODE_LAST) {
       new_mode = MODE_NORMAL;
     }
-    set_mode(new_mode);
+    atari_set_mode(new_mode);
+    settings_commit_mode(new_mode);
   }
   button_pressed = current_button_pressed;
+}
+
+void atari_set_mode(uint8_t new_mode) {
+  mode = new_mode;
+  switch (mode) {
+    case MODE_NORMAL:
+      led_mode(L_ON);
+      grove_update_interrupt(0);
+      break;
+    case MODE_CYBER:
+      led_mode(L_FAST_BLINK);
+      cyber_timeout = 150;
+      cyber_minimum = 10;
+      SET_LOW_CYCLE_SIGNALS(0x0f);
+      RESET_READY();
+#ifdef PROTO1
+      grove_update_interrupt(bIE_RXD1_LO);
+#else
+      P2 = 0xdf;
+      grove_update_interrupt(bIE_P1_4_LO);
+#endif
+      break;
+    case MODE_SAFE:
+      led_mode(L_BLINK);
+      cyber_timeout = 0x7fff;
+      cyber_minimum = 0x7000;
+      SET_LOW_CYCLE_SIGNALS(0x0f);
+      RESET_READY();
+#ifdef PROTO1
+      grove_update_interrupt(bIE_RXD1_LO);
+#else
+      P2 = 0xdf;
+      grove_update_interrupt(bIE_P1_4_LO);
+#endif
+      break;
+    case MODE_MD:
+      // PROTO1 doesn't enter this code path.
+      led_mode(L_BLINK_TWICE);
+      grove_update_interrupt(bIE_P5_7_HI);
+      break;
+  }
 }

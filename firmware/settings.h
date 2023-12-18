@@ -30,6 +30,8 @@ struct settings_sequence* settings_get_sequence(void);
 void settings_rapid_sync(void);
 void settings_load_map(struct settings_map* map);
 void settings_save_map(const struct settings_map* map);
+uint8_t settings_load_mode(void);
+void settings_commit_mode(uint8_t mode);
 bool settings_commit(void);
 
 #endif  // __settings_h__

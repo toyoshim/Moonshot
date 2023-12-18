@@ -17,6 +17,7 @@ static struct settings_sequence sequence[NUM_OF_SEQUENCE];
 static uint8_t flash[4 + sizeof(struct settings_map) * 2];
 static struct settings_map* settings = (struct settings_map*)&flash[4];
 static uint8_t* version = &flash[0];
+static uint8_t* mode = &flash[1];
 
 static void load_rapid_fire_preset(void) {
   static const uint8_t patterns[NUM_OF_SEQUENCE] = {0x01, 0x01, 0x01, 0x03,
@@ -34,7 +35,7 @@ static void load_rapid_fire_preset(void) {
 
 static void load_map_preset(void) {
   *version = 1;
-  flash[1] = 0;  // mode
+  *mode = 0;
   flash[2] = 0;  // padding
   flash[3] = 0;  // padding
   for (uint8_t p = 0; p < 2; ++p) {
@@ -97,6 +98,15 @@ void settings_load_map(struct settings_map* map) {
 
 void settings_save_map(const struct settings_map* map) {
   memcpy(settings, map, sizeof(struct settings_map));
+}
+
+uint8_t settings_load_mode(void) {
+  return *mode;
+}
+
+void settings_commit_mode(uint8_t new_mode) {
+  *mode = new_mode;
+  flash_write(4, flash, 4);
 }
 
 bool settings_commit(void) {
