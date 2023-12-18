@@ -437,7 +437,7 @@ void atari_poll(void) {
 
   bool current_button_pressed = digitalRead(4, 6) == LOW;
   if (button_pressed & !current_button_pressed) {
-    uint8_t new_mode = mode++;
+    uint8_t new_mode = mode + 1;
     if (new_mode > MODE_LAST) {
       new_mode = MODE_NORMAL;
     }
