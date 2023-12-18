@@ -204,13 +204,14 @@ static void gpio_int(void) {
     // For the safe mode, they are set to longer values so that it can work on
     // slow communication cases such as XM6 over U-kun, or X68000Z.
     uint16_t count;
-    for (count = 0; count != cyber_timeout; ++count) {
+    const uint16_t timeout = cyber_timeout;
+    for (count = 0; count != timeout; ++count) {
       ++nop;
       if (GPIO_COM) {
         break;
       }
     }
-    if (count == cyber_timeout) {
+    if (count == timeout) {
       // Disable the GPIO interrupt once to permit timer interrupts, etc for the
       // timeout case as there is a possible case the signal is stuck at low.
       IE_GPIO = 0;
