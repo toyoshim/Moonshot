@@ -1,6 +1,6 @@
 #include "mscmd.h"
 
-#include <string.h>  // TODO: upstream
+#include <string.h>
 
 #include "mslib.h"
 

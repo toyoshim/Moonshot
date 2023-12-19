@@ -5,6 +5,10 @@
 #include "mscmd.h"
 #include "mslib.h"
 
+static unsigned char msconf_version_major = 0;
+static unsigned char msconf_version_minor = 99;
+static unsigned char msconf_version_patch = 0;
+
 static unsigned char version_major = 0;
 static unsigned char version_minor = 0;
 static unsigned char version_patch = 0;
@@ -64,6 +68,7 @@ void show_rapid_fire(int y, int x, int mode) {
 }
 
 void show_version() {
+  printf("\033[%d;%dH%d.%02d.%d", 27, 68, msconf_version_major, msconf_version_minor, msconf_version_patch);
   printf("\033[%d;%dH%d.%02d.%d", 28, 68, version_major, version_minor, version_patch);
 }
 
@@ -261,7 +266,7 @@ void screen_setup() {
     "„« Analog  2  $00 „   S: Save to Moonshot                            ›  ›  › „«",
     "„« Analog  3  $00 „   Q: Quit                                        ›  ›  › „«",
     "„« Analog  4  $00 „                                                  ›  ›  › „«",
-    "„« Analog  5  $00 „                                                  ›  ›  › „«",
+    "„« Analog  5  $00 „                      MsConfig Version : 0.00.0   ›  ›  › „«",
     "„« Analog  6  $00 „                      Firmware Version : 0.00.0   ›  ›  › „«",
     "„¯„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„®",
     0,

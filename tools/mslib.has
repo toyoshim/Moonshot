@@ -8,8 +8,8 @@ _REQ_H		equ	$09
 _LH		equ	5
 _ACK		equ	6
 
-_CS_TIMEOUT	equ	800
-_MS_TIMEOUT	equ	80000		* some commands take a long time to complete
+_CS_TIMEOUT	equ	$0400
+_MS_TIMEOUT	equ	$8000		* some commands take a long time to complete
 
 	.xdef	_ms_comm
 
@@ -31,7 +31,6 @@ _ms_comm
 	movea.l	#_8255ADDR, a0		* a0: 8255 address
 	move.b	#_REQ_H, _CONTROL(a0)
 	move.b	#_REQ_L, _CONTROL(a0)
-	move.b	#_REQ_L, _CONTROL(a0)	* write twice to wait a little via its bus wait
 
 	move.l	8(a6), d1		* d1: len
 	move.l	12(a6), a1		* a1: &tx
@@ -47,43 +46,43 @@ _ms_comm
 	move.b	(a1)+, d0		* d0: |command
 2:
 	lsl.w	#4, d0			* d0: <<= 4
-	move.l	#_CS_TIMEOUT, d2	* d2: timeout
+	move.w	#_CS_TIMEOUT, d2	* d2: timeout
 	move.w	#5, d5			* d5: repeat cycle; 5 + 1 times * 2 (low and high)
 
 __do_transaction:
 	lsl.w	#1, d0
-	bcc	1f
+	bcc	2f
 	move.b	#_REQ_H, _CONTROL(a0)
-	bra	2f
-1:
-	move.b	#_REQ_L, _CONTROL(a0)
+	bra	1f
 2:
-	btst	#_LH, _A(a0)		* - wait for low cycle
-	dbeq	d2, 2b
-	bne	__timeout
+	move.b	#_REQ_L, _CONTROL(a0)
 1:
-	btst	#_ACK, _A(a0)		* - wait for ready signal
+	btst	#_LH, _A(a0)		* - wait for low cycle
 	dbeq	d2, 1b
-	bne	__timeout
+	bcs	__timeout
+1:
+	btst	#_ACK, _A(a0)		* - wait for ready signal negedge
+	dbeq	d2, 1b
+	bcs	__timeout
 
 	move.b	_A(a0), d3		* d3: read data high
 	lsl.b	#4, d3
 	and.b	#$f0, d3
 
 	lsl.w	#1, d0
-	bcc	1f
+	bcc	2f
 	move.b	#_REQ_H, _CONTROL(a0)
-	bra	2f
-1:
-	move.b	#_REQ_L, _CONTROL(a0)
+	bra	1f
 2:
-	btst	#_LH, _A(a0)		* - wait for high cycle
-	dbne	d2, 2b
-	beq	__timeout
+	move.b	#_REQ_L, _CONTROL(a0)
 1:
-	btst	#_ACK, _A(a0)		* - wait for ready signal
+	btst	#_LH, _A(a0)		* - wait for high cycle
+	dbne	d2, 1b
+	bcs	__timeout
+1:
+	btst	#_ACK, _A(a0)		* - wait for ready signal negedge
 	dbeq	d2, 1b
-	bne	__timeout
+	bcs	__timeout
 
 	move.b	_A(a0), d4		* d4: read data
 	and.b	#$0f, d4
@@ -104,7 +103,7 @@ __do_transaction:
 	move.b	(a1)+, d0		* - pick up the next command
 2:
 	lsl.w	#8, d0
-	move.l	#_MS_TIMEOUT, d2
+	move.w	#_MS_TIMEOUT, d2
 	move.w	#3, d5
 	bra	__do_transaction	* - retry 4 * 2 cycles with the next command
 
