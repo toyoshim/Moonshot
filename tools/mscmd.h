@@ -28,5 +28,7 @@ int ms_get_version(unsigned char* major, unsigned char* minor, unsigned char* pa
  */
 int ms_load_config(struct ms_config* config);
 int ms_save_config(const struct ms_config* config);
+int ms_commit_config();
+
 
 #endif  /* __mscmd_h__ */

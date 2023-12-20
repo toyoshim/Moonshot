@@ -18,4 +18,10 @@
  */
 int ms_comm(int len, unsigned char* cmd, unsigned char* res);
 
+/*
+ * Set timeout setting for ms_comm. Default value is 800, and maximum value 0xfffe would be
+ * suitable for U-kun.
+ */
+void ms_set_timeout(unsigned short timeout);
+
 #endif  /* __mslib_h__ */

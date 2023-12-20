@@ -5,25 +5,21 @@
 #include "mslib.h"
 
 int ms_get_version(unsigned char* major, unsigned char* minor, unsigned char* patch) {
-  int try;
   unsigned char command = 0x00;
   unsigned char data[6+4];
-  for (try = 0; try < 2; ++try) {
-    unsigned char xor;
-    int result = ms_comm(1, &command, data);
-    if (result != 0) {
-      continue;
-    }
-    xor = command ^ data[6] ^ data[7] ^ data[8];
-    if (data[9] != xor) {
-      continue;
-    }
-    *major = data[6];
-    *minor = data[7];
-    *patch = data[8];
-    return 0;
+  unsigned char xor;
+  int result = ms_comm(1, &command, data);
+  if (result != 0) {
+    return 1;
   }
-  return 1;
+  xor = command ^ data[6] ^ data[7] ^ data[8];
+  if (data[9] != xor) {
+    return 1;
+  }
+  *major = data[6];
+  *minor = data[7];
+  *patch = data[8];
+  return 0;
 }
 
 int ms_load_config(struct ms_config* config) {
@@ -156,6 +152,21 @@ int ms_save_config(const struct ms_config* config) {
   xor = commit ^ data[6] ^ data[7] ^ data[8];
   if (xor != data[9] || data[6] != 0x46) {
     return 7;
+  }
+  return 0;
+}
+
+int ms_commit_config() {
+  unsigned char command = 0x04;
+  unsigned char data[6+4];
+  unsigned char xor;
+  int result = ms_comm(1, &command, data);
+  if (result != 0) {
+    return 1;
+  }
+  xor = command ^ data[6] ^ data[7] ^ data[8];
+  if (data[9] != xor) {
+    return 1;
   }
   return 0;
 }

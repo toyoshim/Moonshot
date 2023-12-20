@@ -18,6 +18,7 @@ static int cursor_x = 0;  /* 0 - 10 */
 static int cursor_analog_x = 0;
 static int cursor_digital_x = 0;
 static int dirty = 0;
+static int slow_mode = 0;
 
 enum {
   CURSOR_DIGITAL_Y_MAX = 11,
@@ -75,6 +76,7 @@ void show_version() {
 void show_status(const char* status) {
   int length = strlen(status);
   printf("\033[%d;%dH\033[1K%s", 30, 88 - length, status);
+  fflush(stdout);
 }
 
 void show_digital(int i) {
@@ -282,8 +284,15 @@ void screen_setup() {
 int setup(void) {
   int result = ms_get_version(&version_major, &version_minor, &version_patch);
   if (result != 0) {
-    fprintf(stderr, "Moonshot (%d): device not found\n", result);
-    return 1;
+    fprintf(stderr, "Moonshot (%d): device not found, retrying with slow mode option\n",
+	    result);
+    ms_set_timeout(0xfffe);
+    result = ms_get_version(&version_major, &version_minor, &version_patch);
+    if (result != 0) {
+      fprintf(stderr, "Moonshot (%d): still device not found\n", result);
+      return 1;
+    }
+    slow_mode = 1;
   }
   result = ms_load_config(&config);
   if (result != 0) {
@@ -371,15 +380,22 @@ int loop(int bitsns) {
       show_status(message);
       result = ms_save_config(&config);
       if (result) {
-	sprintf(buf, "%s Error %d", message, result);
+	sprintf(buf, "%s Store Error %d", message, result);
       } else {
-	sprintf(buf, "%s Done", message);
+	result = ms_commit_config();
+	if (result) {
+	  sprintf(buf, "%s Commit Error %d", message, result);
+	} else {
+	  sprintf(buf, "%s Done", message);
+	}
       }
       show_status(buf);
     }
     show_cursor(1);
   }
-  update();
+  if (!slow_mode) {
+    update();
+  }
   fflush(stdout);
   return current_bitsns;
 }
