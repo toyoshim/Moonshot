@@ -6,6 +6,8 @@ permalink: /
 {: align="center"}
 ![Moonshot](MS1.png)
 
+現在はβテスター向けの断片的な情報しかありません。
+
 # できること
 - 左側のUSBポートに刺したゲームコントローラをJOY STICK端子に変換する
   + 標準的な2ボタンと上下・左右同時押しを利用したSTART/SELECTボタンに対応
@@ -23,6 +25,7 @@ permalink: /
   + IOCSをフックする予定なので、直接I/Oを叩いたゲーム等には対応できません
 - 同様にしてキーボード、マウスに対応
 - USBハブを経由した接続に対応
+- I2Cを用いた機器の制御
 
 # 動作モード
 基板上のボタンを押すことで切り替わり、LEDの状態でモードを区別できる
@@ -36,22 +39,6 @@ permalink: /
 同ツールをウェブから利用できるようにしたツールがあります。
 ウェブから設定するためには左側のUSBポートをUSB A to AのケーブルでPCに接続してください。
 各種OSからはシリアルポートとして認識され、Chromeからは"Moonshot"の名前でアクセスできるようになります。
-
-# ファームウェアアップデート
-## 事前準備
-### USB Type A to Type Aのケーブル
-USB規格からは外れる特殊ケーブルですが、両端がType Aのケーブルを使いPCと接続する必要があります。
-Amazonで500円から1,000円くらいで入手可能です。
-この際、必ずJOY STICKポートからは取り外し、USBのみを接続してください。双方を同時に接続すると、両者から電源が流れ込み、接続した機器の故障や発火の原因になります。
-また接続する時は基板上のボタンを押して接続してください。ファームウェア更新モードで接続するとLEDは消灯します。
-
-### WinUSBのドライバの設定（Windowsのみ）
-Windowsに限ってドライバが必要となります。Windows 10以降では標準で搭載されています。
-自動ではインストールされないので、手動で`ユニバーサル シリアル バス デバイス`から`WinUsb デバイス`を選択してインストールする必要があります。
-詳細は[Microsoft公式情報](https://learn.microsoft.com/ja-jp/windows-hardware/drivers/usbcon/winusb-installation#installing-winusb-by-specifying-the-system-provided-device-class)をご参照ください。
-参考動画も[こちら](https://www.youtube.com/watch?v=5yzpc2vI_94)にあります。
-USBホストとの相性問題があるようで、ドライバがうまくスタートできない事があります。
-使用しているチップの仕様なので根本的な修正ができないのですが、リトライする、他のUSBポートを試してみる、USBハブ越しに接続する、などが有効なようです。Windows以外のOSでは相性問題は発生しません。
 
 <button id="connect">接続</button>
 <button id="demo">デモ</button>
@@ -136,6 +123,22 @@ pre.console-line {
   });
 </script>
 <script async type="text/javascript" src="msconf.js"></script>
+
+# ファームウェアアップデート
+## 事前準備
+### USB Type A to Type Aのケーブル
+USB規格からは外れる特殊ケーブルですが、両端がType Aのケーブルを使いPCと接続する必要があります。
+Amazonで500円から1,000円くらいで入手可能です。
+この際、必ずJOY STICKポートからは取り外し、USBのみを接続してください。双方を同時に接続すると、両者から電源が流れ込み、接続した機器の故障や発火の原因になります。
+また接続する時は基板上のボタンを押して接続してください。ファームウェア更新モードで接続するとLEDは消灯します。
+
+### WinUSBのドライバの設定（Windowsのみ）
+Windowsに限ってドライバが必要となります。Windows 10以降では標準で搭載されています。
+自動ではインストールされないので、手動で`ユニバーサル シリアル バス デバイス`から`WinUsb デバイス`を選択してインストールする必要があります。
+詳細は[Microsoft公式情報](https://learn.microsoft.com/ja-jp/windows-hardware/drivers/usbcon/winusb-installation#installing-winusb-by-specifying-the-system-provided-device-class)をご参照ください。
+参考動画も[こちら](https://www.youtube.com/watch?v=5yzpc2vI_94)にあります。
+USBホストとの相性問題があるようで、ドライバがうまくスタートできない事があります。
+使用しているチップの仕様なので根本的な修正ができないのですが、リトライする、他のUSBポートを試してみる、USBハブ越しに接続する、などが有効なようです。Windows以外のOSでは相性問題は発生しません。
 
 ## アップデート
 ここから先はChromiumベースのブラウザが必要です。
