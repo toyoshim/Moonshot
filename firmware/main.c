@@ -10,6 +10,7 @@
 #include "usb/cdc_device.h"
 #include "usb/hid/hid.h"
 #include "usb/usb_device.h"
+#include "usb/usb_host.h"
 
 #include "atari.h"
 #include "command.h"
@@ -112,6 +113,7 @@ void main(void) {
   hid.detected = detected;
   hid.get_flags = get_flags;
   hid_init(&hid);
+  usb_host_reset();
 
   for (;;) {
     hid_poll();
