@@ -68,6 +68,7 @@ void settings_init(void) {
   flash_init(*((uint32_t*)"MS68"), true);
   if (!flash_read(4, flash, 4) || *version != 1) {
     load_map_preset();
+    settings_commit();
   } else {
     flash_read(8, (uint8_t*)settings, sizeof(struct settings_map) * 2);
   }

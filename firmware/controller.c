@@ -88,8 +88,6 @@ void controller_update(const uint8_t hub,
     data++;
     size--;
   }
-  digital[hub] = 0;
-
   if (info->state != HID_STATE_READY) {
     reset_data(hub);
     return;

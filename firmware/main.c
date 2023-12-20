@@ -96,6 +96,7 @@ void main(void) {
       break;
     }
   }
+#ifndef _DBG
   if (device_mode) {
     Serial.println("CDC mode");
     led_mode(L_FASTER_BLINK);
@@ -103,6 +104,7 @@ void main(void) {
       led_poll();
     }
   }
+#endif
   Serial.println("HOST mode");
 
   struct hid hid;
