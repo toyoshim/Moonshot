@@ -38,16 +38,19 @@ enum {
 #define MD_STATE_TIMEOUT 2048
 #define MD_STATE_SHORT_TIMEOUT 64
 
+#define CYBER_TIMEOUT 150
+#define CYBER_MINIMUM 10
+#define CYBER_SAFE_TIMEOUT 0x7fff
+#define CYBER_SAFE_MINIMUM 0x7000
+
 static volatile uint8_t out[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 static uint16_t frame_timer = 0;
 static bool button_pressed = false;
 static volatile uint8_t mode = MODE_NORMAL;
 static volatile uint8_t nop = 0;  // used to avoid compiler optimization
 
-// 150 for cyberstick mode, 0x7fff for safe mode.
-static volatile uint16_t cyber_timeout = 150;
-// 10 for cyberstick mode, 0x7000 for safe mode.
-static volatile uint16_t cyber_minimum = 10;
+static volatile uint16_t cyber_timeout = CYBER_TIMEOUT;
+static volatile uint16_t cyber_minimum = CYBER_MINIMUM;
 
 #ifdef PROTO1
 
@@ -461,8 +464,8 @@ void atari_set_mode(uint8_t new_mode) {
       break;
     case MODE_CYBER:
       led_mode(L_FAST_BLINK);
-      cyber_timeout = 150;
-      cyber_minimum = 10;
+      cyber_timeout = CYBER_TIMEOUT;
+      cyber_minimum = CYBER_MINIMUM;
       SET_LOW_CYCLE_SIGNALS(0x0f);
       RESET_READY();
 #ifdef PROTO1
@@ -474,8 +477,8 @@ void atari_set_mode(uint8_t new_mode) {
       break;
     case MODE_SAFE:
       led_mode(L_BLINK);
-      cyber_timeout = 0x7fff;
-      cyber_minimum = 0x7000;
+      cyber_timeout = CYBER_SAFE_TIMEOUT;
+      cyber_minimum = CYBER_SAFE_MINIMUM;
       SET_LOW_CYCLE_SIGNALS(0x0f);
       RESET_READY();
 #ifdef PROTO1
