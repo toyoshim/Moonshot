@@ -4,6 +4,13 @@
 
 #include "mslib.h"
 
+static int slow_mode = 0;
+
+void ms_enter_slow_mode() {
+  slow_mode = 1;
+  ms_set_timeout(0xfffe);
+}
+
 int ms_get_version(unsigned char* major, unsigned char* minor, unsigned char* patch) {
   unsigned char command = 0x00;
   unsigned char data[6+4];
@@ -160,13 +167,22 @@ int ms_commit_config() {
   unsigned char command = 0x04;
   unsigned char data[6+4];
   unsigned char xor;
-  int result = ms_comm(1, &command, data);
+  int result;
+
+  if (!slow_mode) {
+    /* commit command will take a long time to complete flashing */
+    ms_set_timeout(0xfffe);
+  }
+  result = ms_comm(1, &command, data);
   if (result != 0) {
     return 1;
   }
+  if (!slow_mode) {
+    ms_set_timeout(800);
+  }
   xor = command ^ data[6] ^ data[7] ^ data[8];
   if (data[9] != xor) {
-    return 1;
+    return 2;
   }
   return 0;
 }

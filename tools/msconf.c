@@ -5,8 +5,8 @@
 #include "mscmd.h"
 #include "mslib.h"
 
-static unsigned char msconf_version_major = 0;
-static unsigned char msconf_version_minor = 99;
+static unsigned char msconf_version_major = 1;
+static unsigned char msconf_version_minor = 0;
 static unsigned char msconf_version_patch = 0;
 
 static unsigned char version_major = 0;
@@ -19,6 +19,7 @@ static int cursor_analog_x = 0;
 static int cursor_digital_x = 0;
 static int dirty = 0;
 static int slow_mode = 0;
+static int commit_or_quit = 0;
 
 enum {
   CURSOR_DIGITAL_Y_MAX = 11,
@@ -137,6 +138,9 @@ void flip() {
       config.analog[index] = cursor_x;
     }
     show_analog(index);
+  }
+  if (!slow_mode) {
+    ms_save_config(&config);
   }
   dirty = 1;
 }
@@ -286,13 +290,13 @@ int setup(void) {
   if (result != 0) {
     fprintf(stderr, "Moonshot (%d): device not found, retrying with slow mode option\n",
 	    result);
-    ms_set_timeout(0xfffe);
+    ms_enter_slow_mode();
+    slow_mode = 1;
     result = ms_get_version(&version_major, &version_minor, &version_patch);
     if (result != 0) {
       fprintf(stderr, "Moonshot (%d): still device not found\n", result);
       return 1;
     }
-    slow_mode = 1;
   }
   result = ms_load_config(&config);
   if (result != 0) {
@@ -325,15 +329,54 @@ int setup(void) {
   return 0;
 }
 
+int save() {
+  const char* message = "Save Layout to Moonshot ...";
+  char buf[256];
+  int result;
+  show_status(message);
+  result = ms_save_config(&config);
+  if (result) {
+    sprintf(buf, "%s Store Error %d", message, result);
+  } else {
+    result = ms_commit_config();
+    if (result) {
+      sprintf(buf, "%s Commit Error %d", message, result);
+    } else {
+      sprintf(buf, "%s Done", message);
+      dirty = 0;
+    }
+  }
+  show_status(buf);
+  return result;
+}
+
 int loop(int bitsns) {
+  /*
+   * current_butsns: 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+   *          group:        2              2  3  7  7  7  7  5     6
+   *            key:        Y              Q  S dn rt up lt  N    sp
+   */
   int current_bitsns =
-    (_iocs_bitsns(7) & 0x78) | ((_iocs_bitsns(6) & 0x20) >> 5) |
-    (_iocs_bitsns(2) & 0x02) | (_iocs_bitsns(3) & 0x80);
+      (_iocs_bitsns(7) & 0x78) |
+      ((_iocs_bitsns(6) & 0x20) >> 5) |
+      ((_iocs_bitsns(5) & 0x80) >> 5) |
+      (_iocs_bitsns(3) & 0x80) |
+      ((_iocs_bitsns(2) & 0x42) << 7);
   int edge = current_bitsns ^ bitsns;
   int posedge = edge & current_bitsns;
   if (posedge) {
     show_cursor(0);
-    if (posedge & 0x10) {
+    if (commit_or_quit) {
+      if (posedge & 0x2000) { /* Y */
+	if (save() == 0) {
+	  return -1;
+	}
+	commit_or_quit = 0;
+      } else if (posedge & 0x0004) { /* N */
+	show_status("Quit");
+	return -1;
+      }
+    } else if (posedge & 0x0010) { /* up */
       cursor_y--;
       if (cursor_y < 0) {
 	cursor_y = CURSOR_ANALOG_Y_MAX;
@@ -344,7 +387,7 @@ int loop(int bitsns) {
 	cursor_analog_x = cursor_x;
 	cursor_x = cursor_digital_x;
       }
-    } else if (posedge & 0x40) {
+    } else if (posedge & 0x0040) { /* down */
       cursor_y++;
       if (cursor_y > CURSOR_ANALOG_Y_MAX) {
 	cursor_y = 0;
@@ -355,41 +398,31 @@ int loop(int bitsns) {
 	cursor_digital_x = cursor_x;
 	cursor_x = cursor_analog_x;
       }
-    } else if (posedge & 0x08) {
+    } else if (posedge & 0x0008) { /* left */
       cursor_x--;
       if (cursor_x < 0) {
 	cursor_x = (cursor_y > CURSOR_DIGITAL_Y_MAX)
 	? CURSOR_ANALOG_X_MAX : CURSOR_DIGITAL_X_MAX;
       }
-    } else if (posedge & 0x20) {
+    } else if (posedge & 0x0020) { /* right */
       int max =  (cursor_y > CURSOR_DIGITAL_Y_MAX)
       ? CURSOR_ANALOG_X_MAX : CURSOR_DIGITAL_X_MAX;
       cursor_x++;
       if (cursor_x > max) {
 	cursor_x = 0;
       }
-    } else if (posedge & 0x01) {
+    } else if (posedge & 0x0001) { /* space */
       flip();
-    } else if (posedge & 0x02) {
-      /* TODO: dirty check to show warnings */
-      return -1;
-    } else if (posedge & 0x80) {
-      const char* message = "Save Layout to Moonshot ...";
-      char buf[256];
-      int result;
-      show_status(message);
-      result = ms_save_config(&config);
-      if (result) {
-	sprintf(buf, "%s Store Error %d", message, result);
+    } else if (posedge & 0x0100) { /* Q */
+      if (dirty) {
+	show_status("Save to Moonshot's flash before quitting? [Y/N]");
+	commit_or_quit = 1;
       } else {
-	result = ms_commit_config();
-	if (result) {
-	  sprintf(buf, "%s Commit Error %d", message, result);
-	} else {
-	  sprintf(buf, "%s Done", message);
-	}
+	show_status("Quit");
+	return -1;
       }
-      show_status(buf);
+    } else if (posedge & 0x0080) { /* S */
+      save();
     }
     show_cursor(1);
   }

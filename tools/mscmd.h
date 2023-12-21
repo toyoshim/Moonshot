@@ -12,6 +12,11 @@ struct ms_config {
 };
 
 /*
+ * Enter slow mode to communicate with Moonshot over U-kun/X68000Z.
+ */
+void ms_enter_slow_mode();
+
+/*
  * Get Moonshot firmware version.
  * Return 0 if it succeeds. Otherwise returns non-zero value.
  *
