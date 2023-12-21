@@ -7,7 +7,7 @@
 
 static unsigned char msconf_version_major = 1;
 static unsigned char msconf_version_minor = 0;
-static unsigned char msconf_version_patch = 0;
+static unsigned char msconf_version_patch = 1;
 
 static unsigned char version_major = 0;
 static unsigned char version_minor = 0;
@@ -249,7 +249,7 @@ void screen_setup() {
     "",
     "                       * Moonshot Layout Confugurations *",
     "„¬„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„­",
-    "„« [OUTPUT] CPSF  „  Sl  St „  ‚`  ‚a  ‚k „  ‚w  ‚x  ‚q                         „«",
+    "„« [OUTPUT]  CPSF „  Sl  St „  ‚`  ‚a  ‚k „  ‚w  ‚x  ‚q                         „«",
     "„°„ª„ª„ª„ª„­ MD6B „  Sl  St „  ‚`  ‚a  ‚b „  ‚w  ‚x  ‚y                         „«",
     "„«   ›   „« Cyber„  Sl  St „  ‚`  ‚a  ‚b „  ‚c  E1  E2 „  ‚`' ‚a'„  ‚x  ‚w  Th „«",
     "„« ›@› „¯„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„²",
