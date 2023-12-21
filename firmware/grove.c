@@ -148,6 +148,7 @@ void grove_init(void (*interrupt_handler)(void)) {
   i2c.exclusive_time_raw = 1000 * 16;  // 1sec
   i2c.interrupt_handler = interrupt_handler;
   i2c.sda = I2C_SDA_P0_2;
+  i2c.mode = I2C_MODE_DEVICE;
   i2c.start = start;
   i2c.write = write;
   i2c.read = read;
