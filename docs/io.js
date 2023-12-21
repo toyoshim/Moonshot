@@ -54,8 +54,6 @@ class IO {
       const data = new Uint8Array(4);
       if (this.transfer) {
         switch (this.transfer) {
-          case 0xf3:
-            this.transfer_length = (command + 4) >> 2;
           case 0xf0:
           case 0xf1:
           case 0xf2:
@@ -64,14 +62,32 @@ class IO {
             data[2] = command;
             data[3] = command;
             break;
+          case 0xf3:
+            this.transfer_length = command;
+            data[0] = command;
+            data[1] = command;
+            data[2] = command;
+            data[3] = command;
+            break;
+          case 0xf4:
+            this.transfer_length++;
+            data[0] = command;
+            data[1] = command;
+            data[2] = command;
+            data[3] = command;
+            break;
           case 0xf5:
+            this.transfer_length = (this.transfer_length + 4) >> 2;
             data[0] = 0;
             data[1] = 0;
             data[2] = 0;
             data[3] = 0;
             break;
+          default:
+            console.log('Unknown transfer: $' + this.transfer.toString(16));
+            break;
         }
-        if (this.transfer == 0xf5) {
+        if (this.transfer == 0xf4 || this.transfer == 0xf5) {
           this.transfer_length--;
           if (this.transfer_length < 0) {
             this.transfer = 0;
@@ -87,6 +103,17 @@ class IO {
           data[1] = 0x00;
           data[2] = 0x00;
           break;
+        case 0x01:
+          data[0] = 0x00;
+          data[1] = 0x00;
+          data[2] = 0x00;
+          break;
+        case 0x02:
+        case 0x03:
+          data[0] = 0x80;
+          data[1] = 0x80;
+          data[2] = 0x80;
+          break;
         case 0x12:
           data[0] = 0x46;
           data[1] = 0x00;
@@ -96,6 +123,7 @@ class IO {
         case 0xf1:
         case 0xf2:
         case 0xf3:
+        case 0xf4:
         case 0xf5:
           data[0] = command;
           data[1] = command;
@@ -103,6 +131,7 @@ class IO {
           this.transfer = command;
           break;
         default:
+          console.log('Unknown command: $' + command.toString(16));
           return null;
       }
       data[3] = command ^ data[0] ^ data[1] ^ data[2];

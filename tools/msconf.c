@@ -5,9 +5,11 @@
 #include "mscmd.h"
 #include "mslib.h"
 
-static unsigned char msconf_version_major = 1;
-static unsigned char msconf_version_minor = 0;
-static unsigned char msconf_version_patch = 1;
+// MOD BEGIN
+static const unsigned char msconf_version_major = 1;
+static const unsigned char msconf_version_minor = 0;
+static const unsigned char msconf_version_patch = 1;
+// MOD END
 
 static unsigned char version_major = 0;
 static unsigned char version_minor = 0;
@@ -287,7 +289,11 @@ void screen_setup() {
 
 int setup(void) {
   int result = ms_get_version(&version_major, &version_minor, &version_patch);
-  if (result != 0) {
+// MOD BEGIN
+  if (result == 0) {
+    slow_mode = 0;
+  } else {
+// MOD END
     fprintf(stderr, "Moonshot (%d): device not found, retrying with slow mode option\n",
 	    result);
     ms_enter_slow_mode();

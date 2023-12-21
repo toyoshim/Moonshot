@@ -40,6 +40,8 @@ permalink: /
 ウェブから設定するためには左側のUSBポートをUSB A to AのケーブルでPCに接続してください。
 各種OSからはシリアルポートとして認識され、Chromeからは"Moonshot"の名前でアクセスできるようになります。
 
+デモボタンを押すとデバイスがなくてもツールを試せます。接続やデモは複数回の実行時にうまく動作しないため、再度試す際にはページをリロードしてからお試しください。
+
 <button id="connect">接続</button>
 <button id="demo">デモ</button>
 <pre id="console" align="center"></pre>
@@ -67,8 +69,8 @@ pre.console-line {
   var Module = {
     console: new Console(96, 32, document.getElementById('console')),
     io: new IO(this.console),
-    print: (text) => {},
-    printErr: (text) => {},
+    print: (text) => console.log(text),
+    printErr: (text) => console.error(text),
     ms_comm: async (len, cmd_ptr, res_ptr) => {
       if (!this.Module.io.connected()) {
         return 128;
@@ -104,9 +106,12 @@ pre.console-line {
       this.printChar = (stream, curr) => {
         this.Module.console.print(stream, String.fromCharCode(curr));
       };
+      this.Module.console.print(0, "A>MSCONF.X\n");
     },
     postRun: () => {
-      window.console.log(this);
+      setTimeout(e => {
+        this.Module.console.print(0, "A>\n");
+      }, 1);
     },
   };
   document.getElementById('connect').addEventListener('click', async e => {

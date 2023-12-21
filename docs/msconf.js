@@ -335,7 +335,7 @@ assert(!ENVIRONMENT_IS_SHELL, "shell environment detected but not enabled at bui
 // An online HTML version (which may be of a different version of Emscripten)
 //    is up at http://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html
 
-var wasmBinary;
+var wasmBinary; 
 if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];legacyModuleProp('wasmBinary', 'wasmBinary');
 
 if (typeof WebAssembly != 'object') {
@@ -359,6 +359,10 @@ var ABORT = false;
 // but only when noExitRuntime is false.
 var EXITSTATUS;
 
+// In STRICT mode, we only define assert() when ASSERTIONS is set.  i.e. we
+// don't define it at all in release modes.  This matches the behaviour of
+// MINIMAL_RUNTIME.
+// TODO(sbc): Make this the default even without STRICT enabled.
 /** @type {function(*, string=)} */
 function assert(condition, text) {
   if (!condition) {
@@ -983,6 +987,7 @@ function dbg(text) {
 // === Body ===
 
 function __asyncjs__ms_comm(len,cmd,res) { return Asyncify.handleAsync(async () => { return await this.Module.ms_comm(len, cmd, res); }); }
+function ms_set_timeout(timeout) {}
 function _iocs_bitsns(bitsns) { return this.Module.bitsns(bitsns); }
 
 
@@ -1146,7 +1151,7 @@ function _iocs_bitsns(bitsns) { return this.Module.bitsns(bitsns); }
      * @return {string}
      */
   var UTF8ToString = (ptr, maxBytesToRead) => {
-      assert(typeof ptr == 'number');
+      assert(typeof ptr == 'number', `UTF8ToString expects a number (got ${typeof ptr})`);
       return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : '';
     };
   var SYSCALLS = {
@@ -1596,7 +1601,9 @@ var wasmImports = {
   /** @export */
   fd_seek: _fd_seek,
   /** @export */
-  fd_write: _fd_write
+  fd_write: _fd_write,
+  /** @export */
+  ms_set_timeout: ms_set_timeout
 };
 Asyncify.instrumentWasmImports(wasmImports);
 var wasmExports = createWasm();
@@ -1624,8 +1631,8 @@ var _asyncify_start_unwind = createExportWrapper('asyncify_start_unwind');
 var _asyncify_stop_unwind = createExportWrapper('asyncify_stop_unwind');
 var _asyncify_start_rewind = createExportWrapper('asyncify_start_rewind');
 var _asyncify_stop_rewind = createExportWrapper('asyncify_stop_rewind');
-var ___start_em_js = Module['___start_em_js'] = 69944;
-var ___stop_em_js = Module['___stop_em_js'] = 70151;
+var ___start_em_js = Module['___start_em_js'] = 70088;
+var ___stop_em_js = Module['___stop_em_js'] = 70326;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
