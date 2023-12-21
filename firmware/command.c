@@ -30,6 +30,9 @@ enum {
   SET_TRANSFER_LENGTH = 0xf3,
   TRANSFER_TO_DEVICE = 0xf4,
   TRANSFER_TO_HOST = 0xf5,
+
+  SPACE_SCRATCH_MEMORY = 0,
+  SPACE_REGISTER = 1,
 };
 
 static uint8_t scratch_memory[256];
@@ -40,12 +43,25 @@ static uint8_t length = 0;
 static uint8_t transaction_command = 0;
 static uint8_t check_xor = 0;
 
+static void data_write(uint16_t address, uint8_t data) {
+  if (space == SPACE_SCRATCH_MEMORY) {
+    scratch_memory[address & 0xff] = data;
+  }
+}
+
+static uint8_t data_read(uint16_t address) {
+  if (space == SPACE_SCRATCH_MEMORY) {
+    return scratch_memory[address & 0xff];
+  }
+  return 0;
+}
+
 static uint8_t transfer(void) {
   if (length == 0) {
     transaction_command = 0;
     return check_xor;
   }
-  uint8_t data = scratch_memory[address++ & 0xff];
+  uint8_t data = data_read(address++);
   check_xor ^= data;
   length--;
   return data;
@@ -78,7 +94,7 @@ static bool run_transaction(uint8_t data, uint8_t* result) {
       transaction_command = INV_TRANSFER_TO_DEVICE;
       break;
     case INV_TRANSFER_TO_DEVICE:
-      scratch_memory[address++ & 0xff] = data;
+      data_write(address++, data);
       --length;
       if (length == 0) {
         transaction_command = 0;
