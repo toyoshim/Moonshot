@@ -11,12 +11,24 @@
     (via_costs 50)
     (plane_via_costs 5)
     (start_ripup_costs 100)
-    (start_pass_no 3531)
+    (start_pass_no 2555)
     (layer_rule F.Cu
       (active on)
       (preferred_direction vertical)
       (preferred_direction_trace_costs 1.0)
       (against_preferred_direction_trace_costs 2.2)
+    )
+    (layer_rule In1.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 0.0)
+      (against_preferred_direction_trace_costs 0.0)
+    )
+    (layer_rule In2.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 0.0)
+      (against_preferred_direction_trace_costs 0.0)
     )
     (layer_rule B.Cu
       (active on)
@@ -31,6 +43,21 @@
     (clear 125.0 (type smd_to_turn_gap))
     (clear 45.0 (type smd_smd))
   )
+  (padstack "Via[0-3]_800:400_um"
+    (shape
+      (circle F.Cu 800.0 0.0 0.0)
+    )
+    (shape
+      (circle In1.Cu 800.0 0.0 0.0)
+    )
+    (shape
+      (circle In2.Cu 800.0 0.0 0.0)
+    )
+    (shape
+      (circle B.Cu 800.0 0.0 0.0)
+    )
+    (attach off)
+  )
   (padstack "Via[0-1]_800:400_um"
     (shape
       (circle F.Cu 800.0 0.0 0.0)
@@ -39,6 +66,15 @@
       (circle B.Cu 800.0 0.0 0.0)
     )
     (attach off)
+  )
+  (via 
+    "Via[0-3]_800:400_um" "Via[0-3]_800:400_um" default
+  )
+  (via 
+    "Via[0-3]_800:400_um-kicad_default" "Via[0-3]_800:400_um" "kicad_default"
+  )
+  (via 
+    "Via[0-3]_800:400_um-Power" "Via[0-3]_800:400_um" Power
   )
   (via 
     "Via[0-1]_800:400_um" "Via[0-1]_800:400_um" default
@@ -64,6 +100,16 @@
     (rule
       (width 250.0)
     )
+    (layer_rule In1.Cu
+      (rule 
+        (width 0.0) 
+      )
+    )
+    (layer_rule In2.Cu
+      (rule 
+        (width 0.0) 
+      )
+    )
     (circuit 
       (use_layer F.Cu B.Cu)
     )
@@ -81,16 +127,36 @@
     (rule
       (width 250.0)
     )
+    (layer_rule In1.Cu
+      (rule 
+        (width 0.0) 
+      )
+    )
+    (layer_rule In2.Cu
+      (rule 
+        (width 0.0) 
+      )
+    )
     (circuit 
       (use_layer F.Cu B.Cu)
     )
   )
   (class Power
-    VCC GND
+    GND VCC
     (clearance_class Power)
     (via_rule Power)
     (rule
       (width 300.0)
+    )
+    (layer_rule In1.Cu
+      (rule 
+        (width 0.0) 
+      )
+    )
+    (layer_rule In2.Cu
+      (rule 
+        (width 0.0) 
+      )
     )
     (circuit 
       (use_layer F.Cu B.Cu)
