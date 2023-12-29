@@ -87,7 +87,7 @@ void main(void) {
 
   atari_init();
 
-  Serial.print("\nMP17-Moonshot ver " VERSION_STRING " - ");
+  Serial.print("\nMP14-Moonshot ver " VERSION_STRING " - ");
 
   while (timer3_tick_raw() < 0x3000) {
     uint8_t state = usb_device_state();
