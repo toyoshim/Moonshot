@@ -195,11 +195,12 @@ static void gpio_int(void) {
     P4_OUT = out[1];
     return;
   } else if (mode == MODE_CYBER || mode == MODE_SAFE) {
-    if (GPIO_COM) {
-      return;
-    }
-    // The real cyberstick seems to have 4 speed mode, 25us, 50us, 75us, and
-    // 100us per half a cycle, and decides one of them based on the request
+    // Do not check GPIO_COM state here because it might be already reset for
+    // titles that do not give a enouugh wait, i.e. Star Cruiser just pulls it
+    // only for 2us on 10MHz machine, or shorter on faster machines. The real
+    // cyberstick can response only for 10MHz case actually.
+    // Also the real cyberstick seems to have 4 speed mode, 25us, 50us, 75us,
+    // and 100us per half a cycle, and decides one of them based on the request
     // pulse width. Also, if the request has negated over 100us, it starts
     // sending back data in the fastest mode, 25us.
     // The following magic number cyber_minimum and cyber_timeout practically
