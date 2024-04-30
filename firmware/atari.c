@@ -51,6 +51,7 @@ static volatile uint8_t nop = 0;  // used to avoid compiler optimization
 
 static volatile uint16_t cyber_timeout = CYBER_TIMEOUT;
 static volatile uint16_t cyber_minimum = CYBER_MINIMUM;
+static volatile bool cyber_skip = false;
 
 #ifdef PROTO1
 
@@ -199,6 +200,13 @@ static void gpio_int(void) {
     // titles that do not give a enouugh wait, i.e. Star Cruiser just pulls it
     // only for 2us on 10MHz machine, or shorter on faster machines. The real
     // cyberstick can response only for 10MHz case actually.
+    // On the other hand, false interrupt will be triggered immediately after
+    // the extended protocol communication. So, if the cyber_skip is set, check
+    // GPIO_COM only once here.
+    if (GPIO_COM && cyber_skip) {
+      cyber_skip = false;
+      return;
+    }
     // Also the real cyberstick seems to have 4 speed mode, 25us, 50us, 75us,
     // and 100us per half a cycle, and decides one of them based on the request
     // pulse width. Also, if the request has negated over 100us, it starts
@@ -248,6 +256,7 @@ static void gpio_int(void) {
       RESET_READY();
     }
     if ((command >> 8) == 0x0a) {
+      cyber_skip = true;
       uint8_t data = command;
       while (command_in_transaction() || data != 0xff) {
         uint8_t result[4];
