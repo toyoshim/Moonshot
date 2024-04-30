@@ -1,6 +1,7 @@
 LK	= hlk
 AS	= has
 CC	= gcc
+SHELL	= zsh
 
 all: msconf.x
 	./msconf.x
