@@ -474,8 +474,19 @@ void atari_poll(void) {
   settings_rapid_sync();
 
   bool current_button_pressed = digitalRead(4, 6) == LOW;
-  if (button_pressed & !current_button_pressed) {
+  if (!button_pressed & current_button_pressed) {
     uint8_t new_mode = mode + 1;
+    bool timeout = true;
+    while (timer3_tick_msec_between(frame_timer, frame_timer + 1000)) {
+      if (digitalRead(4, 6) == HIGH) {
+        timeout = false;
+        break;
+      }
+    }
+    // To enter the safe mode, the button must be pressed for 1 second.
+    if (new_mode == MODE_SAFE && !timeout) {
+      new_mode++;
+    }
     if (new_mode > MODE_LAST) {
       new_mode = MODE_NORMAL;
     }
