@@ -27,7 +27,7 @@ config:
 	ch559flasher -g 46
 
 prod:
-	ch559flasher -g 46 -E -w ../docs/firmwares/ms2_v1_00_0.bin -b
+	ch559flasher -g 46 -E -w ../docs/firmwares/ms2_v1_01_0.bin -b
 
 clean:
 	rm -rf build $(TARGET).bin $(TARGET)_proto1.bin
