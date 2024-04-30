@@ -28,10 +28,11 @@ enum {
   MODE_CYBER = 1,   // Cyber Stick mode
   MODE_SAFE = 2,    // Safe mode
   MODE_MD = 3,      // Mega Drive 3B / 6B
+  MODE_LR = 4,      // Libble Rabble
 #ifdef PROTO1
   MODE_LAST = MODE_SAFE,
 #else
-  MODE_LAST = MODE_MD,
+  MODE_LAST = MODE_LR,
 #endif
 };
 
@@ -437,6 +438,29 @@ void atari_poll(void) {
     P2 = out[0];
     P3 = out[1];
     P4_OUT = out[1];
+  } else if (mode == MODE_LR) {
+    // PROTO1 doesn't enter this code path.
+    // P2_0: LD
+    // P2_1: LU
+    // P2_2: LL
+    // P2_3: LR
+    // P2_4: B2
+    // P2_5: B1
+    // P3_4: B1
+    // P3_5: B2
+    // P3_6: RR
+    // P3_7: RU
+    // P4_0: RL
+    // P4_1: RD
+    uint8_t b = controller_digital(0) >> 8;
+    // XX XX B1 B2 LR LL LU LD
+    P2 = ~(0xc0 | ((b & 3) << 4) | ((b & 4) << 1) | ((b & 8) >> 1) |
+           ((b & 0x30) >> 4));
+    uint16_t rx = controller_analog(0, 3);
+    uint16_t ry = controller_analog(0, 2);
+    P3 = ((b & 0x02) ? 0 : 0x10) | ((b & 0x01) ? 0 : 0x20) |
+         ((rx > 0xa000) ? 0 : 0x40) | ((ry < 0x6000) ? 0 : 0x80);
+    P4_OUT = ((rx < 0x6000) ? 0 : 0x01) | ((ry > 0xa000) ? 0 : 0x02);
   }
 
   if (mode != MODE_NORMAL) {
@@ -502,6 +526,11 @@ void atari_set_mode(uint8_t new_mode) {
       // PROTO1 doesn't enter this code path.
       led_mode(L_BLINK_TWICE);
       grove_update_interrupt(bIE_P5_7_HI);
+      break;
+    case MODE_LR:
+      // PROTO1 doesn't enter this code path.
+      led_mode(L_BLINK_THREE_TIMES);
+      grove_update_interrupt(0);
       break;
   }
 }
