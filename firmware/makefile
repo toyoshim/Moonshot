@@ -1,5 +1,6 @@
 CFLAGS = -V -mmcs51 --model-large --xram-size 0x1800 --xram-loc 0x0000 \
-	--code-size 0xec00 --stack-auto --Werror -Ichlib/src --opt-code-speed
+	--code-size 0xec00 --stack-auto --Werror -Ichlib/src --opt-code-speed  \
+	--less-pedantic
 CC     = sdcc
 TARGET = moonshot
 OBJS  = main.rel cdc_device.rel command.rel controller.rel settings.rel \
@@ -27,7 +28,7 @@ config:
 	ch559flasher -g 46
 
 prod:
-	ch559flasher -g 46 -E -w ../docs/firmwares/ms2_v1_01_0.bin -b
+	ch559flasher -g 46 -E -w ../docs/firmwares/ms2_v1_02_0.bin -b
 
 clean:
 	rm -rf build $(TARGET).bin $(TARGET)_proto1.bin

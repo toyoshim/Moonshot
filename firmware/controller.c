@@ -150,7 +150,8 @@ void controller_update(const uint8_t hub,
     }
     uint8_t index = settings->analog[i];
     if (index != 0xff) {
-      analog[hub][index] = value;
+      // Polarity support handled here, works from 1.02.0.
+      analog[hub][index & 3] = (index & 4) ? (0xffff - value) : value;
     }
   }
 

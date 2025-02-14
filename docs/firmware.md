@@ -58,6 +58,7 @@ async function flash() {
     'firmwares/ms2_v1_00_0.bin',
     'firmwares/ms2_v1_00_0.bin',
     'firmwares/ms2_v1_01_0.bin',
+    'firmwares/ms2_v1_02_0.bin',
   ];
   const progressWrite = document.getElementById('progress_write');
   const progressVerify = document.getElementById('progress_verify');
@@ -86,7 +87,8 @@ async function flash() {
 <option>プロトタイプ用 Ver 1.00.0</option>
 <option>製品候補用 Ver 1.00.0</option>
 <option>製品用 Ver 1.00.0</option>
-<option selected>製品用 Ver 1.01.0</option>
+<option>製品用 Ver 1.01.0</option>
+<option selected>製品用 Ver 1.02.0</option>
 </select>
 <button onclick="flash();">書き込み</button>
 

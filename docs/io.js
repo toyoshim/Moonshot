@@ -10,6 +10,7 @@ class IO {
     ArrowRight: { group: 7, bit: 0x20 },
     Space: { group: 6, bit: 0x20 },
     KeyS: { group: 3, bit: 0x80 },
+    KeyL: { group: 4, bit: 0x40 },
   };
 
   console = null;
