@@ -7,7 +7,7 @@
 
 static const unsigned char msconf_version_major = 1;
 static const unsigned char msconf_version_minor = 2;
-static const unsigned char msconf_version_patch = 0;
+static const unsigned char msconf_version_patch = 1;
 
 static unsigned char version_major = 0;
 static unsigned char version_minor = 0;
@@ -222,8 +222,8 @@ void update() {
     show_button( 4, 55, ~data[0] & 0x10);  /* D    */
     show_button( 4, 58, ~data[0] & 0x08);  /* E1   */
     show_button( 4, 61, ~data[0] & 0x04);  /* E2   */
-    show_button( 4, 34, ~data[0] & 0x02);  /* St   */
-    show_button( 4, 37, ~data[0] & 0x01);  /* Sl   */
+    show_button( 4, 37, ~data[0] & 0x02);  /* St   */
+    show_button( 4, 34, ~data[0] & 0x01);  /* Sl   */
     last_data[0] = data[0];
   }
   if (last_data[1] != data[1] || last_data[3] != data[3]) {
