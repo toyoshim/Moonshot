@@ -1,0 +1,32 @@
+RUN68	= ${XDEV68K_DIR}/run68/run68
+GAS2HAS = perl ${XDEV68K_DIR}/util/x68k_gas2has.pl -cpu 68000 -inc doscall.inc -inc iocscall.inc
+LK	= $(RUN68) ${XDEV68K_DIR}/x68k_bin/hlk301.x
+AS	= $(RUN68) ${XDEV68K_DIR}/x68k_bin/HAS060.X
+CC	= ${XDEV68K_DIR}/m68k-toolchain/bin/m68k-elf-gcc
+INCLUDE_FLAGS	= -I${XDEV68K_DIR}/include/xc -I${XDEV68K_DIR}/include/xdev68k
+CFLAGS	= -m68000 ${INCLUDE_FLAGS} -DXDEV68K -Wno-builtin-declaration-mismatch -fcall-used-d2 -fcall-used-a2 -finput-charset=cp932 -fexec-charset=cp932 -fverbose-asm
+LIBS	= \
+	${XDEV68K_DIR}/lib/xc/CLIB.L \
+	${XDEV68K_DIR}/lib/xc/DOSLIB.L \
+	${XDEV68K_DIR}/lib/xc/IOCSLIB.L \
+	${XDEV68K_DIR}/lib/xc/FLOATFNC.L \
+	${XDEV68K_DIR}/lib/m68k_elf/m68000/libgcc.a
+SHELL	= zsh
+
+all: msconf.x
+
+clean:
+	rm -rf *.o *.gas *.s libs
+
+msconf.x: mslib.o mscmd.o msconf.o
+	mkdir -p libs
+	cp ${LIBS} libs
+	${LK} -o $@ $^ libs/*
+
+%.o: %.c *.h mslib.h
+	${CC} ${CFLAGS} -O9 -S $< -o $*.gas
+	$(GAS2HAS) -i $*.gas -o $*.s
+	$(AS) -e -u -w0 $(INCLUDE_FLAGS) $*.s -o $*.o
+
+mslib.o: mslib.has
+	${AS} -o $@ $<

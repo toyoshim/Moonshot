@@ -1,9 +1,16 @@
 #include <doslib.h>
 #include <iocslib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "mscmd.h"
 #include "mslib.h"
+
+#ifdef XDEV68K
+#define _dos_kflushio KFLUSHIO
+#define _iocs_bitsns BITSNS
+#define _iocs_b_super B_SUPER
+#endif
 
 static const unsigned char msconf_version_major = 1;
 static const unsigned char msconf_version_minor = 2;
