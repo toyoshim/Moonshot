@@ -18,7 +18,7 @@ all: msconf.x
 clean:
 	rm -rf *.o *.gas *.s libs
 
-msconf.x: mslib.o mscmd.o msconf.o
+msconf.x: msconf.o mslib.o mscmd.o comm.o
 	mkdir -p libs
 	cp ${LIBS} libs
 	${LK} -o $@ $^ libs/*

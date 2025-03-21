@@ -29,7 +29,7 @@ int ms_get_version(unsigned char* major, unsigned char* minor, unsigned char* pa
   return 0;
 }
 
-int ms_load_config(struct ms_config* config) {
+int ms_load_config(struct layout_config* config) {
   unsigned char commands[28] = {
     0x12,        /* Load Layout Settings */
     0xf0, 0x00,  /* Set Transfer Space: Scratch Memory */
@@ -106,7 +106,7 @@ int ms_load_config(struct ms_config* config) {
   return 0;
 }
 
-int ms_save_config(const struct ms_config* config) {
+int ms_save_config(const struct layout_config* config) {
   unsigned char commands[10 + 70] = {
     0xf0, 0x00,  /* Set Transfer Space: Scratch Memory */
     0xf1, 0x00,  /* Set Transfer Address: 0x00 */

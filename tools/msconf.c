@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mscmd.h"
-#include "mslib.h"
+#include "comm.h"
+#include "layout_config.h"
 
 #ifdef XDEV68K
 #define _dos_kflushio KFLUSHIO
@@ -14,19 +14,19 @@
 
 static const unsigned char msconf_version_major = 1;
 static const unsigned char msconf_version_minor = 2;
-static const unsigned char msconf_version_patch = 1;
+static const unsigned char msconf_version_patch = 2;
 
+static unsigned char communication_mode = 0;
 static unsigned char version_major = 0;
 static unsigned char version_minor = 0;
 static unsigned char version_patch = 0;
-static struct ms_config config;
+static struct layout_config config;
 static int label_type = 0;
 static int cursor_y = 0;  /* 0 - 17 */
 static int cursor_x = 0;  /* 0 - 10 */
 static int cursor_analog_x = 0;
 static int cursor_digital_x = 0;
 static int dirty = 0;
-static int slow_mode = 0;
 static int commit_or_quit = 0;
 
 enum {
@@ -176,41 +176,28 @@ void flip() {
     }
     show_analog(index);
   }
-  if (!slow_mode) {
-    ms_save_config(&config);
+  if (communication_mode != COMM_MODE_MOONSHOT_SLOW) {
+    comm_save_config(communication_mode, COMM_SAVE_ONLY, &config);
   }
   dirty = 1;
 }
 
 void update() {
-  static unsigned char last_data[6 + 4 * 3] = {
-      0xff, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  static struct layout_status last_status = {
+    { 0xff, 0x00, 0x00, 0x00, 0x00, 0xff },
+    { 0, 0 },
+    {0, 0, 0, 0, 0, 0},
   };
   static unsigned char last_output_map1 = 0;
-  unsigned char commands[3];
-  unsigned char data[6 + 4 * 3];
-  unsigned short input_map;
+  struct layout_status status;
   unsigned char output_map1;
-  int result;
+  unsigned short input_map;
   int i;
-  commands[0] = 0x01;
-  commands[1] = 0x02;
-  commands[2] = 0x03;
-  result = ms_comm(3, commands, data);
-  for (i = 0; i < 3; ++i) {
-    int offset = 6 + i * 4;
-    unsigned char xor;
-    if (result != 0) {
-      return;
-    }
-    xor = commands[i] ^ data[offset + 0] ^ data[offset + 1] ^ data[offset + 2];
-    if (data[offset + 3] != xor) {
-      return;
-    }
+  if (comm_get_status(communication_mode, &status)) {
+    return;
   }
   /* Calculate cooked d-pad data as Cyberstick doesn't send them */
-  input_map = (data[6] << 8) | data[7];
+  input_map = (status.raw_digital[0] << 8) | status.raw_digital[1];
   output_map1 = 0;
   for (i = 0; i < 16; ++i) {
     if (input_map & (0x8000 >> i)) {
@@ -221,70 +208,71 @@ void update() {
     show_button( 4, 19, output_map1 & 0x20);  /* UP    */
     show_button( 4, 22, output_map1 & 0x10);  /* DOWN  */
     show_button( 4, 25, output_map1 & 0x08);  /* LEFT  */
-    show_button(4, 28, output_map1 & 0x04);   /* RIGHT */
+    show_button( 4, 28, output_map1 & 0x04);  /* RIGHT */
     last_output_map1 = output_map1;
   }
-  if (last_data[0] != data[0]) {
-    show_button( 4, 49, ~data[0] & 0x20);  /* C    */
-    show_button( 4, 55, ~data[0] & 0x10);  /* D    */
-    show_button( 4, 58, ~data[0] & 0x08);  /* E1   */
-    show_button( 4, 61, ~data[0] & 0x04);  /* E2   */
-    show_button( 4, 37, ~data[0] & 0x02);  /* St   */
-    show_button( 4, 34, ~data[0] & 0x01);  /* Sl   */
-    last_data[0] = data[0];
+  if (last_status.cyber_map[0] != status.cyber_map[0]) {
+    unsigned char data = status.cyber_map[0];
+    show_button( 4, 49, ~data & 0x20);  /* C    */
+    show_button( 4, 55, ~data & 0x10);  /* D    */
+    show_button( 4, 58, ~data & 0x08);  /* E1   */
+    show_button( 4, 61, ~data & 0x04);  /* E2   */
+    show_button( 4, 37, ~data & 0x02);  /* St   */
+    show_button( 4, 34, ~data & 0x01);  /* Sl   */
+    last_status.cyber_map[0] = data;
   }
-  if (last_data[1] != data[1] || last_data[3] != data[3]) {
+  if (last_status.cyber_map[1] != status.cyber_map[1] ||
+      last_status.cyber_map[3] != status.cyber_map[3]) {
     /* Y / X */
-    show_value( 4, 78, (data[1] & 0xf0) | (data[3] >> 4));
-    show_value(4, 81, (data[1] << 4) | (data[3] & 0x0f));
-    last_data[1] = data[1];
-    last_data[3] = data[3];
+    show_value( 4, 78, (status.cyber_map[1] & 0xf0) | (status.cyber_map[3] >> 4));
+    show_value( 4, 81, (status.cyber_map[1] << 4) | (status.cyber_map[3] & 0x0f));
+    last_status.cyber_map[1] = status.cyber_map[1];
+    last_status.cyber_map[3] = status.cyber_map[3];
   }
-  if (last_data[2] != data[2] || last_data[4] != data[4]) {
+  if (last_status.cyber_map[2] != status.cyber_map[2] ||
+      last_status.cyber_map[4] != status.cyber_map[4]) {
     /* Th / X2 */
-    show_value( 4, 84, (data[2] & 0xf0) | (data[4] >> 4));
-    show_value( 4, 87, (data[2] << 4) | (data[4] & 0x0f));
-    last_data[2] = data[2];
-    last_data[4] = data[4];
+    show_value( 4, 84, (status.cyber_map[2] & 0xf0) | (status.cyber_map[4] >> 4));
+    show_value( 4, 87, (status.cyber_map[2] << 4) | (status.cyber_map[4] & 0x0f));
+    last_status.cyber_map[2] = status.cyber_map[2];
+    last_status.cyber_map[4] = status.cyber_map[4];
   }
-  if (last_data[5] != data[5]) {
-    show_button( 4, 43, ~data[5] & 0x80);  /* A    */
-    show_button( 4, 46, ~data[5] & 0x40);  /* B    */
-    show_button( 4, 67, ~data[5] & 0x20);  /* A'   */
-    show_button( 4, 70, ~data[5] & 0x10);  /* B'   */
-    last_data[5] = data[5];
+  if (last_status.cyber_map[5] != status.cyber_map[5]) {
+    unsigned char data = status.cyber_map[5];
+    show_button( 4, 43, ~data & 0x80);  /* A    */
+    show_button( 4, 46, ~data & 0x40);  /* B    */
+    show_button( 4, 67, ~data & 0x20);  /* A'   */
+    show_button( 4, 70, ~data & 0x10);  /* B'   */
+    last_status.cyber_map[5] = data;
   }
-  if (last_data[6] != data[6]) {
-    show_button( 7, 14, data[ 6] & 0x80);  /* UP    */
-    show_button( 8, 14, data[ 6] & 0x40);  /* DOWN  */
-    show_button( 9, 14, data[ 6] & 0x20);  /* LEFT  */
-    show_button(10, 14, data[ 6] & 0x10);  /* RIGHT */
-    show_button(11, 14, data[ 6] & 0x08);  /* Dig 1 */
-    show_button(12, 14, data[ 6] & 0x04);  /* Dig 2 */
-    show_button(13, 14, data[ 6] & 0x02);  /* Dig 3 */
-    show_button(14, 14, data[ 6] & 0x01);  /* Dig 4 */
-    last_data[6] = data[6];
+  if (last_status.raw_digital[0] != status.raw_digital[0]) {
+    unsigned char data = status.raw_digital[0];
+    show_button( 7, 14, data & 0x80);  /* UP    */
+    show_button( 8, 14, data & 0x40);  /* DOWN  */
+    show_button( 9, 14, data & 0x20);  /* LEFT  */
+    show_button(10, 14, data & 0x10);  /* RIGHT */
+    show_button(11, 14, data & 0x08);  /* Dig 1 */
+    show_button(12, 14, data & 0x04);  /* Dig 2 */
+    show_button(13, 14, data & 0x02);  /* Dig 3 */
+    show_button(14, 14, data & 0x01);  /* Dig 4 */
+    last_status.raw_digital[0] = data;
   }
-  if (last_data[7] != data[7]) {
-    show_button(15, 14, data[ 7] & 0x80);  /* Dig 5 */
-    show_button(16, 14, data[ 7] & 0x40);  /* Dig 6 */
-    show_button(17, 14, data[ 7] & 0x20);  /* Dig 7 */
-    show_button(18, 14, data[ 7] & 0x10);  /* Dig 8 */
-    show_button(19, 14, data[ 7] & 0x08);  /* Dig 9 */
-    show_button(20, 14, data[ 7] & 0x04);  /* Dig A */
-    show_button(21, 14, data[ 7] & 0x02);  /* Dig B */
-    show_button(22, 14, data[ 7] & 0x01);  /* Dig C */
-    last_data[7] = data[7];
+  if (last_status.raw_digital[1] != status.raw_digital[1]) {
+    unsigned char data = status.raw_digital[1];
+    show_button(15, 14, data & 0x80);  /* Dig 5 */
+    show_button(16, 14, data & 0x40);  /* Dig 6 */
+    show_button(17, 14, data & 0x20);  /* Dig 7 */
+    show_button(18, 14, data & 0x10);  /* Dig 8 */
+    show_button(19, 14, data & 0x08);  /* Dig 9 */
+    show_button(20, 14, data & 0x04);  /* Dig A */
+    show_button(21, 14, data & 0x02);  /* Dig B */
+    show_button(22, 14, data & 0x01);  /* Dig C */
+    last_status.raw_digital[1] = data;
   }
   for (i = 0; i < 6; ++i) {
-    /* Ana 1 + i */
-    int index = 10 + i;
-    if (i >= 3) {
-      index++;
-    }
-    if (last_data[index] != data[index]) {
-      show_value(23 + i, 14, data[index]);
-      last_data[index] = data[index];
+    if (last_status.raw_analog[i] != status.raw_analog[i]) {
+      show_value(23 + i, 14, status.raw_analog[i]);
+      last_status.raw_analog[i] = status.raw_analog[i];
     }
   }
 }
@@ -322,32 +310,23 @@ void screen_setup() {
     "„¯„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„®",
     0,
   };
+  char* screenz = "                          * X68000 Z Layout Confugurations *                          ";
   int i;
   printf("\033[2J");
   for (i = 0; screen[i]; ++i) {
-    printf("\033[%dC%s\n", 5, screen[i]);
+    printf("\033[%dC%s\n", 5,
+       (i == 0 && communication_mode == COMM_MODE_JOYPAD_MAPPER_Z) ? screenz : screen[i]);
   }
   fflush(stdout);
 }
 
 int setup(void) {
-  int result = ms_get_version(&version_major, &version_minor, &version_patch);
-  if (result == 0) {
-    slow_mode = 0;
-  } else {
-    fprintf(stderr, "Moonshot (%d): device not found, retrying with slow mode option\n",
-	    result);
-    ms_enter_slow_mode();
-    slow_mode = 1;
-    result = ms_get_version(&version_major, &version_minor, &version_patch);
-    if (result != 0) {
-      fprintf(stderr, "Moonshot (%d): still device not found\n", result);
-      return 1;
-    }
-  }
-  result = ms_load_config(&config);
+  int result = comm_connect(&communication_mode, &version_major, &version_minor, &version_patch);
   if (result != 0) {
-    fprintf(stderr, "Moonshot (%d): communication failed to load configuration\n", result);
+    return 1;
+  }
+  result = comm_load_config(communication_mode, &config);
+  if (result != 0) {
     fprintf(stderr, "firmware: %d.%02d.%d\n", version_major, version_minor, version_patch);
     return 2;
   }
@@ -368,17 +347,12 @@ int save() {
   char buf[256];
   int result;
   show_status(message);
-  result = ms_save_config(&config);
+  result = comm_save_config(communication_mode, COMM_SAVE_AND_COMMIT, &config);
   if (result) {
-    sprintf(buf, "%s Store Error %d", message, result);
+    sprintf(buf, "%s Error %d", message, result);
   } else {
-    result = ms_commit_config();
-    if (result) {
-      sprintf(buf, "%s Commit Error %d", message, result);
-    } else {
-      sprintf(buf, "%s Done", message);
-      dirty = 0;
-    }
+    sprintf(buf, "%s Done", message);
+    dirty = 0;
   }
   show_status(buf);
   return result;
@@ -464,7 +438,7 @@ int loop(int bitsns) {
     }
     show_cursor(1);
   }
-  if (!slow_mode) {
+  if (communication_mode != COMM_MODE_MOONSHOT_SLOW) {
     update();
   }
   fflush(stdout);
