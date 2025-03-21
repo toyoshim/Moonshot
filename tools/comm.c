@@ -5,10 +5,10 @@
 #include "mscmd.h"
 #include "mslib.h"
 
-unsigned short* mapper_feature = (unsigned short*)0x000ecd000;
-unsigned short* mapper_address = (unsigned short*)0x000ecd002;
-unsigned short* mapper_data = (unsigned short*)0x000ecd004;
-unsigned short* mapper_commit = (unsigned short*)0x000ecd006;
+volatile unsigned short* mapper_feature = (volatile unsigned short*)0x000ecd000;
+volatile unsigned short* mapper_address = (volatile unsigned short*)0x000ecd002;
+volatile unsigned short* mapper_data = (volatile unsigned short*)0x000ecd004;
+volatile unsigned short* mapper_commit = (volatile unsigned short*)0x000ecd006;
 
 int comm_connect(unsigned char* mode, unsigned char* major, unsigned char* minor, unsigned char* patch) {
   int result = ms_get_version(major, minor, patch);
@@ -139,7 +139,7 @@ int comm_get_status(unsigned char mode, struct layout_status* status) {
     unsigned char analog[4];
 
     *mapper_address = 96;
-    data = *mapper_data;
+    data = ~*mapper_data;
     for (int i = 0; i < 4; ++i) {
       *mapper_address = 104 + i;
       analog[i] = *mapper_data;
