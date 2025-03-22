@@ -10,13 +10,18 @@ volatile unsigned short* mapper_address = (volatile unsigned short*)0x000ecd002;
 volatile unsigned short* mapper_data = (volatile unsigned short*)0x000ecd004;
 volatile unsigned short* mapper_commit = (volatile unsigned short*)0x000ecd006;
 
-int comm_connect(unsigned char* mode, unsigned char* major, unsigned char* minor, unsigned char* patch) {
+int comm_connect(unsigned char* mode,
+                 unsigned char* major,
+                 unsigned char* minor,
+                 unsigned char* patch) {
   int result = ms_get_version(major, minor, patch);
   if (result == 0) {
     *mode = COMM_MODE_MOONSHOT;
     return 0;
   }
-  fprintf(stderr, "Moonshot (%d): device not found, retrying with slow mode option\n", result);
+  fprintf(stderr,
+          "Moonshot (%d): device not found, retrying with slow mode option\n",
+          result);
 
   ms_enter_slow_mode();
   result = ms_get_version(major, minor, patch);
@@ -42,7 +47,9 @@ int comm_load_config(unsigned char mode, struct layout_config* config) {
   if (mode == COMM_MODE_MOONSHOT || mode == COMM_MODE_MOONSHOT_SLOW) {
     int result = ms_load_config(config);
     if (result != 0) {
-      fprintf(stderr, "Moonshot (%d): communication failed to load configuration\n", result);
+      fprintf(stderr,
+              "Moonshot (%d): communication failed to load configuration\n",
+              result);
     }
     return result;
   }
@@ -67,7 +74,9 @@ int comm_load_config(unsigned char mode, struct layout_config* config) {
   return 1;
 }
 
-int comm_save_config(unsigned char mode, unsigned char transaction, const struct layout_config* config) {
+int comm_save_config(unsigned char mode,
+                     unsigned char transaction,
+                     const struct layout_config* config) {
   if (mode == COMM_MODE_MOONSHOT || mode == COMM_MODE_MOONSHOT_SLOW) {
     int result = ms_save_config(config);
     if (result != 0) {
@@ -82,7 +91,8 @@ int comm_save_config(unsigned char mode, unsigned char transaction, const struct
   if (mode == COMM_MODE_JOYPAD_MAPPER_Z) {
     int i;
     for (i = 0; i < 16; ++i) {
-      unsigned short data = (config->digital[i].map1 << 8) | config->digital[i].map2;
+      unsigned short data =
+          (config->digital[i].map1 << 8) | config->digital[i].map2;
       *mapper_address = 16 + i;
       *mapper_data = data;
     }
@@ -110,11 +120,12 @@ int comm_get_status(unsigned char mode, struct layout_status* status) {
     result = ms_comm(3, commands, data);
     for (i = 0; i < 3; ++i) {
       int offset = 6 + i * 4;
-      unsigned char xor;
+      unsigned char xor ;
       if (result != 0) {
         return result;
       }
-      xor = commands[i] ^ data[offset + 0] ^ data[offset + 1] ^ data[offset + 2];
+      xor =
+          commands[i] ^ data[offset + 0] ^ data[offset + 1] ^ data[offset + 2];
       if (data[offset + 3] != xor) {
         return -1;
       }
@@ -144,22 +155,16 @@ int comm_get_status(unsigned char mode, struct layout_status* status) {
       *mapper_address = 104 + i;
       analog[i] = *mapper_data;
     }
-    status->cyber_map[0] =
-      ((data >> 2) & 0xfc) |   // A,B,C,D,E1,E2,_,_
-      ((data >> 14) & 0x03) |  // _,_,_,_,_,_,Start,Select
-      ((data << 4) & 0xc0);    // A',B',_,_,_,_,_,_
-    status->cyber_map[1] =
-      (analog[0] >> 4) | (analog[1] & 0xf0);
-    status->cyber_map[2] =
-      (analog[2] >> 4) | (analog[3] & 0xf0);
-    status->cyber_map[3] =
-      (analog[0] & 0x0f) | (analog[1] << 4);
-    status->cyber_map[4] =
-      (analog[2] & 0x0f) | (analog[3] << 4);
-    status->cyber_map[5] =
-      ((data >> 2) & 0xc0) |   // A,B,_,_,_,_,_,_
-      ((data << 2) & 0x30) |   // _,_,A',B',_,_,_,_
-      0x0f;
+    status->cyber_map[0] = ((data >> 2) & 0xfc) |   // A,B,C,D,E1,E2,_,_
+                           ((data >> 14) & 0x03) |  // _,_,_,_,_,_,Start,Select
+                           ((data << 4) & 0xc0);    // A',B',_,_,_,_,_,_
+    status->cyber_map[1] = (analog[1] >> 4) | (analog[0] & 0xf0);
+    status->cyber_map[2] = (analog[3] >> 4) | (analog[2] & 0xf0);
+    status->cyber_map[3] = (analog[1] & 0x0f) | (analog[0] << 4);
+    status->cyber_map[4] = (analog[3] & 0x0f) | (analog[2] << 4);
+    status->cyber_map[5] = ((data >> 2) & 0xc0) |  // A,B,_,_,_,_,_,_
+                           ((data << 2) & 0x30) |  // _,_,A',B',_,_,_,_
+                           ((data >> 10) & 0x0f);  // _,_,_,_,Up,Down,Left,Right
 
     *mapper_address = 64;
     data = *mapper_data;
@@ -173,4 +178,19 @@ int comm_get_status(unsigned char mode, struct layout_status* status) {
     return 0;
   }
   return 1;
+}
+
+unsigned char comm_get_layout_mode(unsigned char mode) {
+  if (mode == COMM_MODE_JOYPAD_MAPPER_Z) {
+    *mapper_address = 0;
+    return *mapper_data;
+  }
+  return 0;
+}
+
+void comm_set_layout_mode(unsigned char mode, unsigned char layout_mode) {
+  if (mode == COMM_MODE_JOYPAD_MAPPER_Z) {
+    *mapper_address = 0;
+    *mapper_data = layout_mode;
+  }
 }
