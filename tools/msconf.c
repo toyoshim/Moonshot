@@ -14,7 +14,7 @@
 
 static const unsigned char msconf_version_major = 1;
 static const unsigned char msconf_version_minor = 2;
-static const unsigned char msconf_version_patch = 2;
+static const unsigned char msconf_version_patch = 3;
 
 static unsigned char communication_mode = 0;
 static unsigned char version_major = 0;
@@ -297,7 +297,7 @@ void update() {
 void screen_setup() {
   /* clang-format off */
   char* screen[] = {
-      "                          * Moonshot Layout Confugurations *                          ",
+      "                          * Moonshot Layout Configurations *                          ",
       "„¬„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„ª„­",
       "„«<      >„              „        „           „           „        „                „«",
       "„«[OUTPUT]„  › › › › „  › › „  › › › „  › › › „  › › „    00 00 00 00 „«",
@@ -329,7 +329,7 @@ void screen_setup() {
       0,
   };
   char* screenz[] = {
-      "                          * X68000 Z Layout Confugurations *                          ",
+      "                          * X68000 Z Layout Configurations *                          ",
       "„« Ana2 00„  L: Layout Mode (Legacy/Std2B/Cyber/Mag.Pad/CPSF/MD6B) „  + › › › › „«",
   };
   /* clang-format on */

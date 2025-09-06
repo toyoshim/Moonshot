@@ -151,26 +151,26 @@ int comm_get_status(unsigned char mode, struct layout_status* status) {
 
     *mapper_address = 96;
     data = ~*mapper_data;
-    for (int i = 0; i < 4; ++i) {
+    for (i = 0; i < 4; ++i) {
       *mapper_address = 104 + i;
       analog[i] = *mapper_data;
     }
-    status->cyber_map[0] = ((data >> 2) & 0xfc) |   // A,B,C,D,E1,E2,_,_
-                           ((data >> 14) & 0x03) |  // _,_,_,_,_,_,Start,Select
-                           ((data << 4) & 0xc0);    // A',B',_,_,_,_,_,_
+    status->cyber_map[0] = ((data >> 2) & 0xfc) |   /* A,B,C,D,E1,E2,_,_        */
+                           ((data >> 14) & 0x03) |  /* _,_,_,_,_,_,Start,Select */
+                           ((data << 4) & 0xc0);    /* A',B',_,_,_,_,_,_        */
     status->cyber_map[1] = (analog[1] >> 4) | (analog[0] & 0xf0);
     status->cyber_map[2] = (analog[3] >> 4) | (analog[2] & 0xf0);
     status->cyber_map[3] = (analog[1] & 0x0f) | (analog[0] << 4);
     status->cyber_map[4] = (analog[3] & 0x0f) | (analog[2] << 4);
-    status->cyber_map[5] = ((data >> 2) & 0xc0) |  // A,B,_,_,_,_,_,_
-                           ((data << 2) & 0x30) |  // _,_,A',B',_,_,_,_
-                           ((data >> 10) & 0x0f);  // _,_,_,_,Up,Down,Left,Right
+    status->cyber_map[5] = ((data >> 2) & 0xc0) |  /* A,B,_,_,_,_,_,_            */
+                           ((data << 2) & 0x30) |  /* _,_,A',B',_,_,_,_          */
+                           ((data >> 10) & 0x0f);  /* _,_,_,_,Up,Down,Left,Right */
 
     *mapper_address = 64;
     data = *mapper_data;
     status->raw_digital[0] = data >> 8;
     status->raw_digital[1] = data & 0xff;
-    for (int i = 0; i < 6; ++i) {
+    for (i = 0; i < 6; ++i) {
       *mapper_address = 72 + i;
       data = *mapper_data;
       status->raw_analog[i] = data;
